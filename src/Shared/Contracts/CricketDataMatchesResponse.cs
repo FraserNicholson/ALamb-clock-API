@@ -2,8 +2,6 @@
 {
     public class CricketDataMatchesResponse
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        
+        public CricketDataMatch[] Data { get; set; }
     }
 }
