@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Shared.Clients;
@@ -24,12 +25,20 @@ namespace WebJob
             builder.ConfigureServices(services =>
             {
                 var cricketApiConfig = configuration.GetSection("CricketDataApi");
-                
+                var mongoDbConfig = configuration.GetSection("MongoDb");
+
                 services.Configure<CricketDataApiOptions>(cricketApiConfig);
-                services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(x =>
+                services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
                 {
-                    x.BaseAddress = cricketApiConfig.Get<CricketDataApiOptions>()?.BaseUri;
+                    c.BaseAddress = cricketApiConfig.Get<CricketDataApiOptions>()?.BaseUri;
                 });
+
+                services.Configure<MongoDbOptions>(mongoDbConfig);
+                services.AddSingleton<IMongoClient>(_ =>
+                    new MongoClient(mongoDbConfig.Get<MongoDbOptions>()?.ConnectionString)
+                );
+
+                services.AddSingleton<IDbClient, MongoDbClient>();
             });
             
             JsonConvert.DefaultSettings = (() =>

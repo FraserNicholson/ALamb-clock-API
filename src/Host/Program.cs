@@ -1,6 +1,24 @@
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
+using Shared.Clients;
+using Shared.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile("appsettings.local.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+
+var mongoDbConfig = configuration.GetSection("MongoDb");
+
+builder.Services.Configure<MongoDbOptions>(mongoDbConfig);
+builder.Services.AddScoped<IMongoClient>(_ =>
+    new MongoClient(mongoDbConfig.Get<MongoDbOptions>()?.ConnectionString)
+);
+
+builder.Services.AddScoped<IDbClient, MongoDbClient>();
 
 builder.Services.AddControllers();
 

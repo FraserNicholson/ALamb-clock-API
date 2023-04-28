@@ -7,8 +7,8 @@ namespace Shared.Clients
 {
     public interface ICricketDataApiClient
     {
-        Task<CricketDataMatch[]> GetMatches();
-        Task<CricketDataCurrentMatch[]> GetCurrentMatches();
+        Task<CricketDataMatchesResponse> GetMatches();
+        Task<CricketDataCurrentMatchesResponse> GetCurrentMatches();
     }
     
     public class CricketDataApiClient : ICricketDataApiClient
@@ -22,20 +22,21 @@ namespace Shared.Clients
             _apiOptions = apiOptions.Value;
         }
         
-        public async Task<CricketDataMatch[]> GetMatches()
+        public async Task<CricketDataMatchesResponse> GetMatches()
         {
             var requestUri = ConstructRequestUri("cricScore");
 
             var response = (await Get<CricketDataMatchesResponse>(requestUri))!;
-            return response.Data;
+            response.DateStored = DateOnly.FromDateTime(DateTime.Today).ToString();
+            return response;
         }
 
-        public async Task<CricketDataCurrentMatch[]> GetCurrentMatches()
+        public async Task<CricketDataCurrentMatchesResponse> GetCurrentMatches()
         {
             var requestUri = ConstructRequestUri("currentMatches");
 
             var response = (await Get<CricketDataCurrentMatchesResponse>(requestUri))!;
-            return response.Data;
+            return response;
         }
 
         private async Task<T?> Get<T>(string requestUri)

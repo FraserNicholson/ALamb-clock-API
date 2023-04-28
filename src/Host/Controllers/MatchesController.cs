@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Shared.Clients;
 
 namespace ALamb_clock_API.Controllers
 {
@@ -6,14 +7,18 @@ namespace ALamb_clock_API.Controllers
     [Route("matches")]
     public class MatchesController : Controller
     {
-        public MatchesController()
+        private readonly IDbClient _dbClient;
+        public MatchesController(IDbClient dbClient)
         {
+            _dbClient = dbClient;
         }
 
         [HttpGet("matches-list")]
         public async Task<IActionResult> GetMatchesList()
         {
-            return Ok();
+            var matchesResponse = await _dbClient.GetCricketMatches();
+            
+            return Ok(matchesResponse);
         }
     }
 }
