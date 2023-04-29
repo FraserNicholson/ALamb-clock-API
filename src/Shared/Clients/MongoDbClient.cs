@@ -11,6 +11,7 @@ namespace Shared.Clients
     {
         Task SaveCricketMatches(CricketDataMatchesResponse matches);
         Task<MatchesDbModel> GetCricketMatches();
+        Task DeleteExpiredCricketMatches();
     }
     
     public class MongoDbClient : IDbClient
@@ -51,6 +52,17 @@ namespace Shared.Clients
                     DateOnly.FromDateTime(DateTime.Today).ToString());
 
             return await (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefaultAsync();
+        }
+
+        public async Task DeleteExpiredCricketMatches()
+        {
+            var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
+
+            var filter =
+                Builders<MatchesDbModel>.Filter.Lte("DateStored",
+                    DateOnly.FromDateTime(DateTime.Today.AddDays(-7)).ToString());
+
+            await matchesCollection.DeleteManyAsync(filter);
         }
     }
 }

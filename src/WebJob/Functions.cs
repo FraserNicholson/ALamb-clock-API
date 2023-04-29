@@ -23,6 +23,9 @@ namespace WebJob
             
             logger.LogInformation("Storing cricket matches list");
             await _dbClient.SaveCricketMatches(cricketMatches);
+            
+            logger.LogInformation("Removing expired matches");
+            await _dbClient.DeleteExpiredCricketMatches();
         }
     }
 }
