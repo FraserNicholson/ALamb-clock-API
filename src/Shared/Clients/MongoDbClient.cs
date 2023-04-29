@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using Shared.Contracts;
 using Shared.Models;
 using Shared.Options;
@@ -10,7 +11,7 @@ namespace Shared.Clients
     public interface IDbClient
     {
         Task SaveCricketMatches(CricketDataMatchesResponse matches);
-        Task<MatchesDbModel> GetCricketMatches();
+        Task<MatchesDbModel> GetMostRecentlyStoredCricketMatches();
         Task DeleteExpiredCricketMatches();
     }
     
@@ -43,7 +44,7 @@ namespace Shared.Clients
             await matchesCollection.InsertOneAsync(matchesDbModel);
         }
 
-        public async Task<MatchesDbModel> GetCricketMatches()
+        public async Task<MatchesDbModel> GetMostRecentlyStoredCricketMatches()
         {
             var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
 
@@ -51,7 +52,20 @@ namespace Shared.Clients
                 Builders<MatchesDbModel>.Filter.Eq("DateStored",
                     DateOnly.FromDateTime(DateTime.Today).ToString());
 
-            return await (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefaultAsync();
+            var matchesStoredToday =
+                await (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefaultAsync();
+
+            if (matchesStoredToday is not null)
+            {
+                return matchesStoredToday;
+            }
+
+            filter = Builders<MatchesDbModel>.Filter.Empty;
+
+            var mostRecentlyStoredMatches = await matchesCollection.Find(filter).SortByDescending(m => m.DateStored)
+                .FirstOrDefaultAsync();
+
+            return mostRecentlyStoredMatches;
         }
 
         public async Task DeleteExpiredCricketMatches()
