@@ -13,6 +13,7 @@ namespace Shared.Contracts
         /// Describes the state the match is currently in, can be result/live/fixture
         /// </summary>
         [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty("MS")]
         public MatchStatus MatchStatus { get; set; }
         [JsonProperty("T1")]
         public string Team1 { get; set; } = default!;
