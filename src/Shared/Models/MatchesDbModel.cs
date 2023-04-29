@@ -6,6 +6,6 @@ namespace Shared.Models
     public class MatchesDbModel : CricketDataMatchesResponse
     {
         [BsonId]
-        public string Id { get; set; }
+        public string Id { get; set; } = default!;
     }
 }

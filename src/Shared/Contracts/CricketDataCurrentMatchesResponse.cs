@@ -2,6 +2,6 @@
 {
     public class CricketDataCurrentMatchesResponse
     {
-        public CricketDataCurrentMatch[] Data { get; set; }
+        public CricketDataCurrentMatch[] Data { get; set; } = default!;
     }
 }

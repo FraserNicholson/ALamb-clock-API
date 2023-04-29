@@ -4,19 +4,19 @@ namespace Shared.Contracts
 {
     public class CricketDataCurrentMatch
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
+        public string Id { get; set; } = default!;
+        public string Name { get; set; } = default!;
         /// <summary>
         /// Start dateTime of the match
         /// </summary>
-        public DateTime DateTimeGMT { get; set; }
-        public string MatchType { get; set; }
-        public string Status { get; set; }
-        public string[] Teams { get; set; }
-        public Score[] Score { get; set; }
-        public string Venue { get; set; }
+        public DateTime DateTimeGmt { get; set; } = default!;
+        public string MatchType { get; set; } = default!;
+        public string Status { get; set; } = default!;
+        public string[] Teams { get; set; } = default!;
+        public Score[] Score { get; set; } = default!;
+        public string Venue { get; set; } = default!;
         [JsonProperty("Series_id")]
-        public string SeriesId { get; set; }
+        public string SeriesId { get; set; } = default!;
         public bool MatchStarted { get; set; }
         public bool MatchEnded { get; set; }
     }
@@ -29,6 +29,6 @@ namespace Shared.Contracts
         public int Wickets { get; set; }
         [JsonProperty("O")]
         public double Overs { get; set; }
-        public string Inning { get; set; }
+        public string Inning { get; set; } = default!;
     }
 }
