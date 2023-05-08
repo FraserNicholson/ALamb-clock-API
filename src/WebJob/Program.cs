@@ -8,64 +8,55 @@ using Newtonsoft.Json.Converters;
 using Shared.Clients;
 using Shared.Options;
 
-namespace WebJob
+var builder = new HostBuilder();
+
+IConfiguration configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: true)
+    .AddJsonFile("appsettings.local.json", optional: true)
+    .AddEnvironmentVariables()
+    .Build();
+            
+builder.ConfigureServices(services =>
 {
-    public static class Program
+    var cricketApiConfig = configuration.GetSection("CricketDataApi");
+    var mongoDbConfig = configuration.GetSection("MongoDb");
+
+    services.Configure<CricketDataApiOptions>(cricketApiConfig);
+    services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
     {
-        public static async Task Main(string[] args)
-        {
-            var builder = new HostBuilder();
+        c.BaseAddress = cricketApiConfig.Get<CricketDataApiOptions>()?.BaseUri;
+    });
 
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddJsonFile("appsettings.local.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-            
-            builder.ConfigureServices(services =>
-            {
-                var cricketApiConfig = configuration.GetSection("CricketDataApi");
-                var mongoDbConfig = configuration.GetSection("MongoDb");
+    services.Configure<MongoDbOptions>(mongoDbConfig);
+    services.AddSingleton<IMongoClient>(_ =>
+        new MongoClient(mongoDbConfig.Get<MongoDbOptions>()?.ConnectionString)
+    );
 
-                services.Configure<CricketDataApiOptions>(cricketApiConfig);
-                services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
-                {
-                    c.BaseAddress = cricketApiConfig.Get<CricketDataApiOptions>()?.BaseUri;
-                });
-
-                services.Configure<MongoDbOptions>(mongoDbConfig);
-                services.AddSingleton<IMongoClient>(_ =>
-                    new MongoClient(mongoDbConfig.Get<MongoDbOptions>()?.ConnectionString)
-                );
-
-                services.AddSingleton<IDbClient, MongoDbClient>();
-            });
+    services.AddSingleton<IDbClient, MongoDbClient>();
+});
             
-            JsonConvert.DefaultSettings = (() =>
-            {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new StringEnumConverter());
-                return settings;
-            });
+JsonConvert.DefaultSettings = (() =>
+{
+    var settings = new JsonSerializerSettings();
+    settings.Converters.Add(new StringEnumConverter());
+    return settings;
+});
             
-            builder.UseEnvironment(EnvironmentName.Development);
-            builder.ConfigureLogging((context, b) =>
-            {
-                b.AddConsole();
-            });
+builder.UseEnvironment(EnvironmentName.Development);
+builder.ConfigureLogging((context, b) =>
+{
+    b.AddConsole();
+});
             
-            builder.ConfigureWebJobs(b =>
-            {
-                b.AddAzureStorageQueues();
-                b.AddAzureStorageBlobs();
-                b.AddTimers();
-            });
+builder.ConfigureWebJobs(b =>
+{
+    b.AddAzureStorageQueues();
+    b.AddAzureStorageBlobs();
+    b.AddTimers();
+});
             
-            var host = builder.Build();
-            using (host)
-            {
-                await host.RunAsync();
-            }
-        }
-    }   
+var host = builder.Build();
+using (host)
+{
+    await host.RunAsync();
 }
