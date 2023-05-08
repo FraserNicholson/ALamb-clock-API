@@ -1,6 +1,7 @@
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using Shared.Clients;
+using Shared.Messaging;
 using Shared.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,10 @@ IConfiguration configuration = new ConfigurationBuilder()
     .Build();
 
 var mongoDbConfig = configuration.GetSection("MongoDb");
+var rabbitMqConfig = configuration.GetSection("RabbitMq");
+
+builder.Services.Configure<RabbitMqOptions>(rabbitMqConfig);
+builder.Services.AddScoped<IMessageProducer, RabbitMqProducer>();
 
 builder.Services.Configure<MongoDbOptions>(mongoDbConfig);
 builder.Services.AddScoped<IMongoClient>(_ =>

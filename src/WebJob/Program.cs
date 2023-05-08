@@ -20,6 +20,9 @@ builder.ConfigureServices(services =>
 {
     var cricketApiConfig = configuration.GetSection("CricketDataApi");
     var mongoDbConfig = configuration.GetSection("MongoDb");
+    var rabbitMqConfig = configuration.GetSection("RabbitMq");
+
+    services.Configure<RabbitMqOptions>(rabbitMqConfig);
 
     services.Configure<CricketDataApiOptions>(cricketApiConfig);
     services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
@@ -54,7 +57,7 @@ builder.ConfigureWebJobs(b =>
     b.AddAzureStorageBlobs();
     b.AddTimers();
 });
-            
+
 var host = builder.Build();
 using (host)
 {

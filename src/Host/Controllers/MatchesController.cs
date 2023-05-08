@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shared.Clients;
+using Shared.Contracts;
+using Shared.Messaging;
 using Shared.Models;
 
 namespace ALamb_clock_API.Controllers
@@ -9,9 +11,11 @@ namespace ALamb_clock_API.Controllers
     public class MatchesController : Controller
     {
         private readonly IDbClient _dbClient;
-        public MatchesController(IDbClient dbClient)
+        private readonly IMessageProducer _messageProducer;
+        public MatchesController(IDbClient dbClient, IMessageProducer messageProducer)
         {
             _dbClient = dbClient;
+            _messageProducer = messageProducer;
         }
 
         /// <summary>
@@ -25,6 +29,24 @@ namespace ALamb_clock_API.Controllers
             var matchesResponse = await _dbClient.GetMostRecentlyStoredCricketMatches();
             
             return Ok(matchesResponse);
+        }
+
+        /// <summary>
+        /// Sets up a notification
+        /// </summary>
+        /// <returns>Sets up a notification that will be sent to a device when the notification criteria is met</returns>
+        [HttpPost("setup-notification")]
+        public IActionResult SetupNotification([FromBody] SetupNotificationRequest request)
+        {
+            var message = new SetupNotificationMessage()
+            {
+                Id = Guid.NewGuid().ToString(),
+                MatchId = request.MatchId
+            };
+            
+            _messageProducer.SendMessage(message);
+            
+            return Created(message.Id, message);
         }
     }
 }
