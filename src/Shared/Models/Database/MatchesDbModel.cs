@@ -1,11 +1,10 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using Shared.Contracts;
 
-namespace Shared.Models.Database
+namespace Shared.Models.Database;
+
+public class MatchesDbModel : CricketDataMatchesResponse
 {
-    public class MatchesDbModel : CricketDataMatchesResponse
-    {
-        [BsonId]
-        public string Id { get; set; } = default!;
-    }
+    [BsonId]
+    public string Id { get; set; } = default!;
 }

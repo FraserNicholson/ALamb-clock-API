@@ -1,8 +1,7 @@
-﻿namespace Shared.Options
+﻿namespace Shared.Options;
+
+public class MongoDbOptions
 {
-    public class MongoDbOptions
-    {
-        public string ConnectionString { get; set; } = default!;
-        public string DatabaseName { get; set; } = default!;
-    }
+    public string ConnectionString { get; set; } = default!;
+    public string DatabaseName { get; set; } = default!;
 }

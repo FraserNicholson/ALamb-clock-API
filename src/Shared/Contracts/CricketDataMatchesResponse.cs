@@ -1,11 +1,10 @@
 ﻿using Newtonsoft.Json;
 
-namespace Shared.Contracts
+namespace Shared.Contracts;
+
+public class CricketDataMatchesResponse
 {
-    public class CricketDataMatchesResponse
-    {
-        [JsonIgnore]
-        public string DateStored { get; set; } = default!;
-        public CricketDataMatch[] Data { get; set; } = default!;
-    }
+    [JsonIgnore]
+    public string DateStored { get; set; } = default!;
+    public CricketDataMatch[] Data { get; set; } = default!;
 }

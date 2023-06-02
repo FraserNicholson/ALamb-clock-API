@@ -1,8 +1,7 @@
-﻿namespace Shared.Models
+﻿namespace Shared.Models;
+
+public enum NotificationType
 {
-    public enum NotificationType
-    {
-        ChangeOfInnings,
-        WicketCount
-    }
+    ChangeOfInnings,
+    WicketCount
 }

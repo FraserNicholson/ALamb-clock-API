@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Contracts
+namespace Shared.Contracts;
+
+public class NotificationCreatedResponse
 {
-    public class NotificationCreatedResponse
-    {
-        public string Id { get; set; } = default!;
-        public string MatchId { get; set; } = default!;
-    }
+    public string Id { get; set; } = default!;
+    public string MatchId { get; set; } = default!;
 }

@@ -1,7 +1,6 @@
-﻿namespace Shared.Options
+﻿namespace Shared.Options;
+
+public class FirebaseOptions
 {
-    public class FirebaseOptions
-    {
-        public string ProjectId { get; set; } = default!;
-    }
+    public string ProjectId { get; set; } = default!;
 }

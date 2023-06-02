@@ -1,8 +1,7 @@
-﻿namespace Shared.Options
+﻿namespace Shared.Options;
+
+public class CricketDataApiOptions
 {
-    public class CricketDataApiOptions
-    {
-        public Uri? BaseUri { get; set; }
-        public string ApiKey { get; set; } = default!;
-    }
+    public Uri? BaseUri { get; set; }
+    public string ApiKey { get; set; } = default!;
 }
