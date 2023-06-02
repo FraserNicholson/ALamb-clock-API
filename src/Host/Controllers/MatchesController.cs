@@ -11,11 +11,9 @@ namespace ALamb_clock_API.Controllers
     public class MatchesController : Controller
     {
         private readonly IDbClient _dbClient;
-        private readonly IMessageProducer _messageProducer;
-        public MatchesController(IDbClient dbClient, IMessageProducer messageProducer)
+        public MatchesController(IDbClient dbClient)
         {
             _dbClient = dbClient;
-            _messageProducer = messageProducer;
         }
 
         /// <summary>
@@ -38,15 +36,8 @@ namespace ALamb_clock_API.Controllers
         [HttpPost("setup-notification")]
         public IActionResult SetupNotification([FromBody] SetupNotificationRequest request)
         {
-            var message = new SetupNotificationMessage()
-            {
-                Id = Guid.NewGuid().ToString(),
-                MatchId = request.MatchId
-            };
             
-            _messageProducer.SendMessage(message);
-            
-            return Created(message.Id, message);
+            return Created("", "");
         }
     }
 }

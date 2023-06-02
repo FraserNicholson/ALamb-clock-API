@@ -20,9 +20,6 @@ builder.ConfigureServices(services =>
 {
     var cricketApiConfig = configuration.GetSection("CricketDataApi");
     var mongoDbConfig = configuration.GetSection("MongoDb");
-    var rabbitMqConfig = configuration.GetSection("RabbitMq");
-
-    services.Configure<RabbitMqOptions>(rabbitMqConfig);
 
     services.Configure<CricketDataApiOptions>(cricketApiConfig);
     services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
