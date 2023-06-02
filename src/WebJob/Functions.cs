@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Shared.Clients;
+using WebJob.Services;
 
 namespace WebJob
 {
@@ -8,10 +9,15 @@ namespace WebJob
     {
         private readonly ICricketDataApiClient _cricketDataApi;
         private readonly IDbClient _dbClient;
-        public Functions(ICricketDataApiClient cricketDataApi, IDbClient dbClient)
+        private readonly ICheckNotificationsService _checkNotificationsService;
+        public Functions(
+            ICricketDataApiClient cricketDataApi, 
+            IDbClient dbClient,
+            ICheckNotificationsService checkNotificationsService)
         {
             _cricketDataApi = cricketDataApi;
             _dbClient = dbClient;
+            _checkNotificationsService = checkNotificationsService;
         }
         
         [FunctionName(nameof(UpdateMatchesList))]
@@ -26,6 +32,13 @@ namespace WebJob
             
             logger.LogInformation("Removing expired matches");
             await _dbClient.DeleteExpiredCricketMatches();
+        }
+
+        [FunctionName(nameof(CheckNotifications))]
+        public async Task CheckNotifications([TimerTrigger("0 * * * * *", RunOnStartup = false)] TimerInfo timerInfo, ILogger logger)
+        {
+            logger.LogInformation("Starting {FunctionName}", nameof(UpdateMatchesList));
+            await _checkNotificationsService.CheckAndSendNotifications();
         }
     }
 }

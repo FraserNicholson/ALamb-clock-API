@@ -3,6 +3,7 @@ using Shared.Clients;
 using Shared.Contracts;
 using Shared.Messaging;
 using Shared.Models;
+using Shared.Models.Database;
 
 namespace ALamb_clock_API.Controllers
 {
@@ -34,10 +35,17 @@ namespace ALamb_clock_API.Controllers
         /// </summary>
         /// <returns>Sets up a notification that will be sent to a device when the notification criteria is met</returns>
         [HttpPost("setup-notification")]
-        public IActionResult SetupNotification([FromBody] SetupNotificationRequest request)
+        public async Task<IActionResult> SetupNotification([FromBody] AddNotificationRequest request)
         {
-            
-            return Created("", "");
+            var createdNotification = await _dbClient.AddOrUpdateNotification(request);
+
+            var response = new NotificationCreatedResponse()
+            {
+                Id = createdNotification.Id,
+                MatchId = createdNotification.MatchId
+            };
+
+            return Created(response.Id, response);
         }
     }
 }

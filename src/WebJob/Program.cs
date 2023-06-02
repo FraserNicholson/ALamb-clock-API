@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Shared.Clients;
 using Shared.Options;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using WebJob.Services;
+using Shared.Messaging;
 
 var builder = new HostBuilder();
 
@@ -20,6 +24,7 @@ builder.ConfigureServices(services =>
 {
     var cricketApiConfig = configuration.GetSection("CricketDataApi");
     var mongoDbConfig = configuration.GetSection("MongoDb");
+    var firebaseConfig = configuration.GetSection("Firebase");
 
     services.Configure<CricketDataApiOptions>(cricketApiConfig);
     services.AddHttpClient<ICricketDataApiClient, CricketDataApiClient>(c =>
@@ -33,6 +38,15 @@ builder.ConfigureServices(services =>
     );
 
     services.AddSingleton<IDbClient, MongoDbClient>();
+
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile("appsettings.firebase.json"),
+        ProjectId = firebaseConfig.Get<FirebaseOptions>()?.ProjectId,
+    });
+
+    services.AddSingleton<ICheckNotificationsService, CheckNotificationsService>();
+    services.AddSingleton<INotificationProducer, FirebaseNotificationProducer>();
 });
             
 JsonConvert.DefaultSettings = (() =>

@@ -6,6 +6,7 @@
 # Appsettings
 
 appsettings.local.json
+appsettings.firebase.json
 
 # User-specific files
 *.rsuser
