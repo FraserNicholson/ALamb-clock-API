@@ -8,7 +8,7 @@ namespace WebJob.Services;
 
 public interface ICheckNotificationsService
 {
-    Task CheckAndSendNotifications();
+    Task<int> CheckAndSendNotifications();
 }
 public class CheckNotificationsService : ICheckNotificationsService
 {
@@ -25,20 +25,27 @@ public class CheckNotificationsService : ICheckNotificationsService
         _notificationProducer = notificationProducer;
     }
 
-    public async Task CheckAndSendNotifications()
+    public async Task<int> CheckAndSendNotifications()
     {
-        var activeNotifications = await _databaseClient.GetActiveNotifications();
+        var activeNotifications = (await _databaseClient.GetActiveNotifications()).ToList();
 
-        if (activeNotifications == null || !activeNotifications.Any())
+        if (!activeNotifications.Any())
         {
-            return;
+            return 0;
         }
 
-        var satisfiedNotifications = await GetSatisfiedNotifications(activeNotifications);
+        var satisfiedNotifications = (await GetSatisfiedNotifications(activeNotifications)).ToList();
 
+        if (!satisfiedNotifications.Any())
+        {
+            return 0;
+        }
+        
         await _notificationProducer.SendNotifications(satisfiedNotifications);
 
         await _databaseClient.DeleteNotifications(satisfiedNotifications.Select(n => n.Id));
+
+        return satisfiedNotifications.Count;
     }
 
     private async Task<IEnumerable<NotificationDbModel>> GetSatisfiedNotifications(
