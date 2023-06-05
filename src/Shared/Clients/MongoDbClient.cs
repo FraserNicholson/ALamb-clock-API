@@ -56,8 +56,7 @@ public class MongoDbClient : IDbClient
             Builders<MatchesDbModel>.Filter.Eq("DateStored",
                 DateOnly.FromDateTime(DateTime.Today).ToString());
 
-        var matchesStoredToday =
-            await (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefaultAsync();
+        var matchesStoredToday = (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefault();
 
         if (matchesStoredToday is not null)
         {
@@ -66,8 +65,8 @@ public class MongoDbClient : IDbClient
 
         filter = Builders<MatchesDbModel>.Filter.Empty;
 
-        var mostRecentlyStoredMatches = await matchesCollection.Find(filter).SortByDescending(m => m.DateStored)
-            .FirstOrDefaultAsync();
+        var mostRecentlyStoredMatches = matchesCollection.Find(filter).SortByDescending(m => m.DateStored)
+            .FirstOrDefault();
 
         return mostRecentlyStoredMatches;
     }
@@ -89,7 +88,7 @@ public class MongoDbClient : IDbClient
 
         var emptyFilter = Builders<NotificationDbModel>.Filter.Empty;
 
-        return await (await notificationsCollection.FindAsync(emptyFilter)).ToListAsync();
+        return (await notificationsCollection.FindAsync(emptyFilter)).ToList();
     }
 
     public async Task<IEnumerable<NotificationDbModel>> GetActiveNotifications()
@@ -99,7 +98,7 @@ public class MongoDbClient : IDbClient
         var filter = Builders<NotificationDbModel>.Filter.Lte("MatchStartsAt",
             DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
 
-        return await (await notificationsCollection.FindAsync(filter)).ToListAsync();
+        return (await notificationsCollection.FindAsync(filter)).ToList();
     }
 
     public async Task DeleteNotifications(IEnumerable<string> notificationIdsToDelete)
@@ -124,9 +123,9 @@ public class MongoDbClient : IDbClient
         var numberOfWicketsFilter = Builders<NotificationDbModel>.Filter.Eq("NumberOfWickets",
             addNotificationRequest.NumberOfWickets);
 
-        var existingNotifications = await (await notificationsCollection
+        var existingNotifications = (await notificationsCollection
                 .FindAsync(idFilter & notificationTypeFiler & teamInQuestionFilter & numberOfWicketsFilter))
-            .ToListAsync();
+            .ToList();
 
         if (!existingNotifications.Any())
         {

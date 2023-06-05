@@ -4,7 +4,6 @@ using NUnit.Framework;
 using Shared.Clients;
 using Shared.Contracts;
 using Shared.Messaging;
-using Shared.Models;
 using Shared.Models.Database;
 using WebJob.Services;
 
@@ -43,7 +42,7 @@ public class CheckNotificationsServiceTests
     }
 
     [Test]
-    public async Task Should_not_send_notifications_when_there_are_no_active_notifications()
+    public async Task CheckAndSendNotifications_WithNoActiveNotifications_ShouldNotSendNotifications()
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
             .ReturnsAsync(Enumerable.Empty<NotificationDbModel>());
@@ -63,7 +62,7 @@ public class CheckNotificationsServiceTests
     }
     
     [TestCaseSource(nameof(_noNotificationsSatisfiedTestCases))]
-    public async Task Should_not_send_notifications_when_no_notifications_have_been_satisfied(
+    public async Task CheckAndSendNotifications_WithNoSatisfiedNotifications_ShouldNotSendNotifications(
         CricketDataCurrentMatchesResponse apiResponse)
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
@@ -84,7 +83,7 @@ public class CheckNotificationsServiceTests
     }
     
     [TestCaseSource(nameof(_oneNotificationsSatisfiedTestCases))]
-    public async Task Should_only_send_notifications_for_notifications_that_have_been_satisfied(
+    public async Task CheckAndSendNotifications_WithOneSatisfiedNotification_ShouldSendOneNotifications(
         CricketDataCurrentMatchesResponse apiResponse)
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
@@ -105,7 +104,7 @@ public class CheckNotificationsServiceTests
     }
     
     [TestCaseSource(nameof(_bothNotificationsSatisfiedTestCases))]
-    public async Task Should_send_notifications_for_all_notifications_that_have_been_satisfied(
+    public async Task CheckAndSendNotifications_WithAllSatisfiedNotification_ShouldSendAllNotifications(
         CricketDataCurrentMatchesResponse apiResponse)
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
