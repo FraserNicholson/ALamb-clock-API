@@ -27,7 +27,6 @@ public class CricketDataApiClient : ICricketDataApiClient
         var requestUri = ConstructRequestUri("cricScore");
 
         var response = (await Get<CricketDataMatchesResponse>(requestUri))!;
-        response.DateStored = DateOnly.FromDateTime(DateTime.Today).ToString();
         return response;
     }
 

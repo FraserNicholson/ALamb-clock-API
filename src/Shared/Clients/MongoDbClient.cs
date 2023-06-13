@@ -40,10 +40,21 @@ public class MongoDbClient : IDbClient
         var matchesDbModel = new MatchesDbModel()
         {
             Id = Guid.NewGuid().ToString(),
-            Data = matches.Data,
-            DateStored = matches.DateStored
+            DateStored = DateOnly.FromDateTime(DateTime.Today).ToString(),
+            Matches = matches.Data
+                .Where(m => m.MatchStatus != ResponseMatchStatus.Result)
+                .Select(m => new MatchDbModel
+                {
+                    Id = m.Id,
+                    Status = m.Status,
+                    MatchStatus = (MatchStatus)m.MatchStatus,
+                    Team1 = m.Team1,
+                    Team2 = m.Team2,
+                    MatchType = m.MatchType,
+                    DateTimeGmt = m.DateTimeGmt
+                }).ToArray()
         };
-            
+
         var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
         await matchesCollection.InsertOneAsync(matchesDbModel);
     }

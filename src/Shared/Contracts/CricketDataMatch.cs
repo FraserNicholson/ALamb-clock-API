@@ -14,14 +14,14 @@ public class CricketDataMatch
     /// </summary>
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty("MS")]
-    public MatchStatus MatchStatus { get; set; }
+    public ResponseMatchStatus MatchStatus { get; set; }
     [JsonProperty("T1")]
     public string Team1 { get; set; } = default!;
     [JsonProperty("T2")]
     public string Team2 { get; set; } = default!;
 }
     
-public enum MatchStatus
+public enum ResponseMatchStatus
 {
     Result,
     Live,

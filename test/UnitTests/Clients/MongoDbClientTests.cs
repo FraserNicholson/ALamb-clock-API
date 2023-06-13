@@ -53,8 +53,7 @@ public class MongoDbClientTests
                 {
                     Id = "matchId"
                 }
-            },
-            DateStored = "2023-06-04"
+            }
         };
 
         var sut = CreateSut();
@@ -71,8 +70,8 @@ public class MongoDbClientTests
     {
         var savedCricketMatches = new MatchesDbModel
         {
-            Data = Array.Empty<CricketDataMatch>(),
-            DateStored = DateTime.Today.ToString(CultureInfo.InvariantCulture),
+            Matches = Array.Empty<MatchDbModel>(),
+            DateStored = DateTime.Today.ToString(),
             Id = "matches-id"
         };
         

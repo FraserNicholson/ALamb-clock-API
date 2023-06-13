@@ -17,6 +17,7 @@ var builder = new HostBuilder();
 IConfiguration configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
     .AddJsonFile("appsettings.local.json", optional: true)
+    .AddJsonFile("appsettings.firebase.json")
     .AddEnvironmentVariables()
     .Build();
             
