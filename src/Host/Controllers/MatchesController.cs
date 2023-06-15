@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Shared.Clients;
 using Shared.Contracts;
-using Shared.Messaging;
-using Shared.Models;
 using Shared.Models.Database;
 
 namespace ALamb_clock_API.Controllers;
@@ -22,13 +20,34 @@ public class MatchesController : Controller
     /// </summary>
     /// <returns>List of current and upcoming cricket matches</returns>
     [HttpGet("matches-list")]
-    [ProducesResponseType(typeof(MatchesDbModel), 200)]
+    [ProducesResponseType(typeof(IEnumerable<MatchDbModel>), 200)]
     public async Task<IActionResult> GetMatchesList()
     {
-        var matchesResponse = await _dbClient.GetMostRecentlyStoredCricketMatches();
+        var matchesResponse = await _dbClient.GetAllMatches();
             
         return Ok(matchesResponse);
     }
+
+    /// <summary>
+    /// Queries currently stored matches
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns>All matches that match the request criteria</returns>
+    [HttpPost("query-matches")]
+    public async Task<IActionResult> QueryMatches([FromBody] QueryMatchesRequest request)
+    {
+        var (isValid, errorMessage) = request.IsValid();
+        
+        if (!isValid)
+        {
+            return BadRequest(errorMessage);
+        }
+
+        var matches = await _dbClient.QueryMatches(request);
+
+        return Ok(matches);
+    }
+    
 
     /// <summary>
     /// Sets up a notification

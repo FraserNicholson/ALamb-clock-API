@@ -2,19 +2,13 @@
 
 namespace Shared.Models.Database;
 
-public class MatchesDbModel
-{
-    [BsonId]
-    public string Id { get; set; } = default!;
-    public string DateStored { get; init; } = default!;
-    public MatchDbModel[] Matches { get; set; } = default!;
-}
-
 public class MatchDbModel
 {
     [BsonId]
     public string Id { get; set; } = default!;
-    public DateTime DateTimeGmt { get; set; } = default!;
+    public string MatchId { get; set; } = default!;
+    public string DateStored { get; init; } = default!;
+    public DateTime DateTimeGmt { get; set; }
     public string MatchType { get; set; } = default!;
     public string Status { get; set; } = default!;
     /// <summary>

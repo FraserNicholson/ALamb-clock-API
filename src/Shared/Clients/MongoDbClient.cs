@@ -10,7 +10,8 @@ namespace Shared.Clients;
 public interface IDbClient
 {
     Task SaveCricketMatches(CricketDataMatchesResponse matches);
-    Task<MatchesDbModel> GetMostRecentlyStoredCricketMatches();
+    Task<IEnumerable<MatchDbModel>> GetAllMatches();
+    Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request);
     Task DeleteExpiredCricketMatches();
     Task<NotificationDbModel> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest);
     Task<IEnumerable<NotificationDbModel>> GetAllNotifications();
@@ -25,6 +26,7 @@ public class MongoDbClient : IDbClient
     private readonly IMongoDatabase _database;
     private const string MatchesCollectionName = "matches";
     private const string NotificationsCollectionName = "notifications";
+    private const int MatchesPageSize = 10;
 
     public MongoDbClient(IOptions<MongoDbOptions> dbOptions, IMongoClient mongoClient)
     {
@@ -33,64 +35,88 @@ public class MongoDbClient : IDbClient
 
         _database = _mongoClient.GetDatabase(_dbOptions.DatabaseName);
     }
-
-
+    
     public async Task SaveCricketMatches(CricketDataMatchesResponse matches)
     {
-        var matchesDbModel = new MatchesDbModel()
-        {
-            Id = Guid.NewGuid().ToString(),
-            DateStored = DateOnly.FromDateTime(DateTime.Today).ToString(),
-            Matches = matches.Data
-                .Where(m => m.MatchStatus != ResponseMatchStatus.Result)
-                .Select(m => new MatchDbModel
-                {
-                    Id = m.Id,
-                    Status = m.Status,
-                    MatchStatus = (MatchStatus)m.MatchStatus,
-                    Team1 = m.Team1,
-                    Team2 = m.Team2,
-                    MatchType = m.MatchType,
-                    DateTimeGmt = m.DateTimeGmt
-                }).ToArray()
-        };
+        var matchesToStore = matches.Data
+            .Where(m => m.MatchStatus != ResponseMatchStatus.Result)
+            .Select(m => new MatchDbModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                MatchId = m.Id,
+                DateStored = DateOnly.FromDateTime(DateTime.Today).ToString(),
+                Status = m.Status,
+                MatchStatus = (MatchStatus)m.MatchStatus,
+                Team1 = m.Team1,
+                Team2 = m.Team2,
+                MatchType = m.MatchType,
+                DateTimeGmt = m.DateTimeGmt
+            });
 
-        var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
-        await matchesCollection.InsertOneAsync(matchesDbModel);
+        var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
+        await matchesCollection.InsertManyAsync(matchesToStore);
     }
 
-    public async Task<MatchesDbModel> GetMostRecentlyStoredCricketMatches()
+    public async Task<IEnumerable<MatchDbModel>> GetAllMatches()
     {
-        var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
+        var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
         var filter =
-            Builders<MatchesDbModel>.Filter.Eq("DateStored",
-                DateOnly.FromDateTime(DateTime.Today).ToString());
+            Builders<MatchDbModel>.Filter.Empty;
 
-        var matchesStoredToday = (await matchesCollection.FindAsync<MatchesDbModel>(filter)).FirstOrDefault();
+        return await (await matchesCollection.FindAsync<MatchDbModel>(filter)).ToListAsync();
+    }
 
-        if (matchesStoredToday is not null)
+    public async Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request)
+    {
+        var filter = BuildMatchTypeFilter(request);
+
+        var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
+
+        var matchesCount = (int)await matchesCollection.CountDocumentsAsync(filter);
+
+        var matchesFromDb = await matchesCollection.Find(filter)
+            .Skip((request.PageNumber - 1) * MatchesPageSize)
+            .Limit(MatchesPageSize)
+            .ToListAsync();
+
+        var matchesResponse = new QueryMatchesResponse
         {
-            return matchesStoredToday;
-        }
+            Count = matchesCount,
+            Matches = matchesFromDb.Select(m => new MatchesResponse
+            {
+                Id = m.MatchId,
+                Status = m.Status,
+                MatchStatus = m.MatchStatus.ToString(),
+                Team1 = m.Team1,
+                Team2 = m.Team2,
+                MatchType = m.MatchType,
+                DateTimeGmt = m.DateTimeGmt
+            }).ToArray()
+        };
 
-        filter = Builders<MatchesDbModel>.Filter.Empty;
-
-        var mostRecentlyStoredMatches = matchesCollection.Find(filter).SortByDescending(m => m.DateStored)
-            .FirstOrDefault();
-
-        return mostRecentlyStoredMatches;
+        return matchesResponse;
     }
 
     public async Task DeleteExpiredCricketMatches()
     {
-        var matchesCollection = _database.GetCollection<MatchesDbModel>(MatchesCollectionName);
+        var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
-        var filter =
-            Builders<MatchesDbModel>.Filter.Lte("DateStored",
-                DateOnly.FromDateTime(DateTime.Today.AddDays(-7)).ToString());
+        var yesterdayFilter =
+            Builders<MatchDbModel>.Filter.Lte("DateStored",
+                DateOnly.FromDateTime(DateTime.Today.AddDays(-1)).ToString());
+        
+        
+        var todayFilter =
+            Builders<MatchDbModel>.Filter.Lte("DateStored",
+                DateOnly.FromDateTime(DateTime.Today).ToString());
 
-        await matchesCollection.DeleteManyAsync(filter);
+        var numberOfMatchesStoredToday = (int)await matchesCollection.CountDocumentsAsync(todayFilter);
+
+        if (numberOfMatchesStoredToday > 0)
+        {
+            await matchesCollection.DeleteManyAsync(yesterdayFilter);
+        }
     }
 
     public async Task<IEnumerable<NotificationDbModel>> GetAllNotifications()
@@ -195,5 +221,12 @@ public class MongoDbClient : IDbClient
         await collection.UpdateOneAsync(filter, update);
 
         return notificationToUpdate;
+    }
+
+    private static FilterDefinition<MatchDbModel> BuildMatchTypeFilter(QueryMatchesRequest request)
+    {
+        return string.IsNullOrWhiteSpace(request.MatchType)
+            ? Builders<MatchDbModel>.Filter.Empty
+            : Builders<MatchDbModel>.Filter.Eq("MatchType", request.MatchType == "county" ? string.Empty : request.MatchType);
     }
 }

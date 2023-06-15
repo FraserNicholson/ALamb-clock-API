@@ -17,7 +17,7 @@ public class MongoDbClientTests
     private IOptions<MongoDbOptions> _dbOptions;
     private IMongoClient _mongoClient;
     private IMongoDatabase _database;
-    private IMongoCollection<MatchesDbModel> _matchesCollection;
+    private IMongoCollection<MatchDbModel> _matchesCollection;
     private IMongoCollection<NotificationDbModel> _notificationCollection;
 
     [SetUp]
@@ -26,12 +26,12 @@ public class MongoDbClientTests
         _dbOptions = Options.Create(new MongoDbOptions { ConnectionString = "test", DatabaseName = "test" });
         _mongoClient = Mock.Of<IMongoClient>();
         _database = Mock.Of<IMongoDatabase>();
-        _matchesCollection = Mock.Of<IMongoCollection<MatchesDbModel>>();
+        _matchesCollection = Mock.Of<IMongoCollection<MatchDbModel>>();
         _notificationCollection = Mock.Of<IMongoCollection<NotificationDbModel>>();
 
         Mock.Get(_mongoClient).Setup(c => c.GetDatabase(It.IsAny<string>(), It.IsAny<MongoDatabaseSettings>()))
             .Returns(_database);
-        Mock.Get(_database).Setup(d => d.GetCollection<MatchesDbModel>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
+        Mock.Get(_database).Setup(d => d.GetCollection<MatchDbModel>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
             .Returns(_matchesCollection);
         Mock.Get(_database).Setup(d => d.GetCollection<NotificationDbModel>(It.IsAny<string>(), It.IsAny<MongoCollectionSettings>()))
             .Returns(_notificationCollection);
@@ -61,46 +61,45 @@ public class MongoDbClientTests
         await sut.SaveCricketMatches(cricketMatchToSave);
         
         Mock.Get(_matchesCollection)
-            .Verify(c => c.InsertOneAsync(
-                It.IsAny<MatchesDbModel>(), It.IsAny<InsertOneOptions>(), It.IsAny<CancellationToken>()), Times.Once);
+            .Verify(c => c.InsertManyAsync(
+                It.IsAny<IEnumerable<MatchDbModel>>(), It.IsAny<InsertManyOptions>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
     public async Task GetMostRecentlyStoredCricketMatches_GivenMatchesHaveBeenStoredToday_ReturnsTodaysMatches()
     {
-        var savedCricketMatches = new MatchesDbModel
+        var savedCricketMatches = new MatchDbModel[]
         {
-            Matches = Array.Empty<MatchDbModel>(),
-            DateStored = DateTime.Today.ToString(),
-            Id = "matches-id"
+            new ()
+            {
+                MatchId = "match-id",
+                DateStored = DateTime.Today.ToString(CultureInfo.InvariantCulture)
+            },
+            new ()
+            {
+                MatchId = "match-id-2",
+                DateStored = DateTime.Today.ToString(CultureInfo.InvariantCulture)
+            }
         };
         
+        var mockCursor = new Mock<IAsyncCursor<MatchDbModel>>();
+        
+        mockCursor.Setup(c => c.Current).Returns(savedCricketMatches);
+        mockCursor.SetupSequence(c => c.MoveNextAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(true))
+            .Returns(Task.FromResult(false));
+        
         Mock.Get(_matchesCollection)
-            .Setup(c => c.FindAsync(It.IsAny<FilterDefinition<MatchesDbModel>>(), It.IsAny<FindOptions<MatchesDbModel, MatchesDbModel>>(), default))
-            .ReturnsAsync(MockCursor(savedCricketMatches));
+            .Setup(c => c.FindAsync(It.IsAny<FilterDefinition<MatchDbModel>>(), It.IsAny<FindOptions<MatchDbModel, MatchDbModel>>(), default))
+            .ReturnsAsync(mockCursor.Object);
 
         var sut = CreateSut();
 
-        var matches = await sut.GetMostRecentlyStoredCricketMatches();
+        var matches = await sut.GetAllMatches();
         
         Mock.Get(_matchesCollection)
-            .Verify(c => c.FindAsync(It.IsAny<FilterDefinition<MatchesDbModel>>(),
-                It.IsAny<FindOptions<MatchesDbModel, MatchesDbModel>>(), It.IsAny<CancellationToken>()), Times.Once);
+            .Verify(c => c.FindAsync(It.IsAny<FilterDefinition<MatchDbModel>>(),
+                It.IsAny<FindOptions<MatchDbModel, MatchDbModel>>(), It.IsAny<CancellationToken>()), Times.Once);
         matches.Should().BeEquivalentTo(savedCricketMatches);
-    }
-
-    private static IAsyncCursor<T> MockCursor<T>(params T[] items)
-    {
-        var mockCursor = new Mock<IAsyncCursor<T>>();
-
-        var itemsList = new List<T>(items);
-        mockCursor.SetupSequence(c => c.MoveNext(It.IsAny<CancellationToken>()))
-            .Returns(() => itemsList.Any())
-            .Returns(() => false);
-
-        mockCursor.SetupGet(c => c.Current)
-            .Returns(() => itemsList);
-
-        return mockCursor.Object;
     }
 }
