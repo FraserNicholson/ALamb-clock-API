@@ -1,4 +1,6 @@
+using System.Threading.RateLimiting;
 using ALamb_clock_API.Middleware;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using Shared.Clients;
@@ -36,6 +38,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddRateLimiter(options => {
+    options.AddFixedWindowLimiter("Fixed", opt => {
+        opt.Window = TimeSpan.FromSeconds(1);
+        opt.PermitLimit = 100;
+        opt.QueueLimit = 100;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+});
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -55,5 +66,6 @@ app.UseReDoc(options =>
 app.MapControllers();
 
 app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
+app.UseRateLimiter();
 
 app.Run();

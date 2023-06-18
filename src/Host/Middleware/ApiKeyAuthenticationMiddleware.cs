@@ -1,7 +1,4 @@
 ﻿using System.Net;
-using FirebaseAdmin;
-using FirebaseAdmin.Auth;
-using Google.Apis.Auth;
 using Microsoft.Extensions.Options;
 using Shared.Options;
 

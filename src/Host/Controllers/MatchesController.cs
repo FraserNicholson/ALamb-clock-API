@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Shared.Clients;
 using Shared.Contracts;
 using Shared.Models.Database;
@@ -7,6 +8,7 @@ namespace ALamb_clock_API.Controllers;
 
 [ApiController]
 [Route("matches")]
+[EnableRateLimiting("Fixed")]
 public class MatchesController : Controller
 {
     private readonly IDbClient _dbClient;
