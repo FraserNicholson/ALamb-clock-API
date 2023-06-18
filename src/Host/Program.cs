@@ -1,7 +1,7 @@
+using ALamb_clock_API.Middleware;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using Shared.Clients;
-using Shared.Messaging;
 using Shared.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,11 +13,14 @@ IConfiguration configuration = new ConfigurationBuilder()
     .Build();
 
 var mongoDbConfig = configuration.GetSection("MongoDb");
+var authConfig = configuration.GetSection("Authentication");
 
 builder.Services.Configure<MongoDbOptions>(mongoDbConfig);
 builder.Services.AddScoped<IMongoClient>(_ =>
     new MongoClient(mongoDbConfig.Get<MongoDbOptions>()?.ConnectionString)
 );
+
+builder.Services.Configure<AuthenticationOptions>(authConfig);
 
 builder.Services.AddScoped<IDbClient, MongoDbClient>();
 
@@ -50,5 +53,7 @@ app.UseReDoc(options =>
 });
 
 app.MapControllers();
+
+app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 
 app.Run();
