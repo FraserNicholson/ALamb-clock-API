@@ -1,10 +1,9 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using Shared.Models;
 
-namespace Shared.Models.Database;
+namespace Shared.Contracts;
 
-public class NotificationDbModel
+public class NotificationResponse
 {
-    [BsonId]
     public string Id { get; set; } = default!;
     public string MatchId { get; set; } = default!;
     public string Team1 { get; set; } = default!;
@@ -13,5 +12,4 @@ public class NotificationDbModel
     public string TeamInQuestion { get; set; } = default!;
     public NotificationType NotificationType { get; set; }
     public int? NumberOfWickets { get; set; }
-    public List<string> RegistrationTokens { get; set; } = default!;
 }

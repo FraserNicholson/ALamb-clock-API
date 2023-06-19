@@ -60,12 +60,50 @@ public class MatchesController : Controller
     {
         var createdNotification = await _dbClient.AddOrUpdateNotification(request);
 
-        var response = new NotificationCreatedResponse()
+        var response = new NotificationCreatedResponse
         {
             Id = createdNotification.Id,
             MatchId = createdNotification.MatchId
         };
 
         return Created(response.Id, response);
+    }
+
+    [HttpGet("get-notifications")]
+    public async Task<IActionResult> GetNotifications([FromQuery] string registrationToken)
+    {
+        if (string.IsNullOrWhiteSpace(registrationToken))
+        {
+            return BadRequest($"Query parameter {nameof(registrationToken)} must be provided");
+        }
+
+        var notifications = await _dbClient.GetAllNotificationsForRegistrationToken(registrationToken);
+
+        if (notifications is null || !notifications.Any())
+        {
+            return NotFound();
+        }
+        
+        return Ok(notifications);
+    }
+
+    [HttpDelete("delete-notification")]
+    public async Task<IActionResult> DeleteNotification(
+        [FromQuery] string notificationId,
+        [FromQuery] string registrationToken)
+    {
+        if (string.IsNullOrWhiteSpace(registrationToken))
+        {
+            return BadRequest($"Query parameter {nameof(registrationToken)} must be provided");
+        }
+        
+        if (string.IsNullOrWhiteSpace(notificationId))
+        {
+            return BadRequest($"Query parameter {nameof(notificationId)} must be provided");
+        }
+
+        await _dbClient.DeleteNotification(notificationId, registrationToken);
+
+        return Ok();
     }
 }

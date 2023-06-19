@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Shared.Contracts;
+using Shared.Extensions;
 using Shared.Models.Database;
 using Shared.Options;
 
@@ -13,10 +14,11 @@ public interface IDbClient
     Task<IEnumerable<MatchDbModel>> GetAllMatches();
     Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request);
     Task DeleteExpiredCricketMatches();
-    Task<NotificationDbModel> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest);
-    Task<IEnumerable<NotificationDbModel>> GetAllNotifications();
+    Task<NotificationResponse> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest);
+    Task<IEnumerable<NotificationResponse>> GetAllNotificationsForRegistrationToken(string registrationToken);
     Task<IEnumerable<NotificationDbModel>> GetActiveNotifications();
     Task DeleteNotifications(IEnumerable<string> notificationIdsToDelete);
+    Task DeleteNotification(string notificationId, string registrationToken);
 }
     
 public class MongoDbClient : IDbClient
@@ -119,13 +121,13 @@ public class MongoDbClient : IDbClient
         }
     }
 
-    public async Task<IEnumerable<NotificationDbModel>> GetAllNotifications()
+    public async Task<IEnumerable<NotificationResponse>> GetAllNotificationsForRegistrationToken(string registrationToken)
     {
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
-        var emptyFilter = Builders<NotificationDbModel>.Filter.Empty;
+        var filter = Builders<NotificationDbModel>.Filter.Eq("RegistrationTokens", registrationToken);
 
-        return (await notificationsCollection.FindAsync(emptyFilter)).ToList();
+        return (await notificationsCollection.FindAsync(filter)).ToList().ToResponse();
     }
 
     public async Task<IEnumerable<NotificationDbModel>> GetActiveNotifications()
@@ -147,7 +149,27 @@ public class MongoDbClient : IDbClient
         await notificationsCollection.DeleteManyAsync(filter);
     }
 
-    public async Task<NotificationDbModel> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest)
+    public async Task DeleteNotification(string notificationId, string registrationToken)
+    {
+        var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
+
+        var idFilter = Builders<NotificationDbModel>.Filter.Eq("Id", notificationId);
+        var registrationIdFilter = Builders<NotificationDbModel>.Filter.AnyStringIn(n => n.RegistrationTokens,
+            registrationToken);
+
+        var notification = await (await notificationsCollection.FindAsync(idFilter & registrationIdFilter))
+            .SingleOrDefaultAsync();
+
+        if (notification?.RegistrationTokens.Any(t => t != registrationToken) == true)
+        {
+            await RemoveRegistrationTokenFromNotification(notificationsCollection, notification, registrationToken);
+            return;
+        }
+
+        await notificationsCollection.DeleteOneAsync(idFilter & registrationIdFilter);
+    }
+
+    public async Task<NotificationResponse> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest)
     {
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
@@ -175,7 +197,7 @@ public class MongoDbClient : IDbClient
             addNotificationRequest);
     }
 
-    private static async Task<NotificationDbModel> AddNewNotification(
+    private static async Task<NotificationResponse> AddNewNotification(
         IMongoCollection<NotificationDbModel> collection,
         AddNotificationRequest addNotificationRequest)
     {
@@ -183,6 +205,8 @@ public class MongoDbClient : IDbClient
         {
             Id = Guid.NewGuid().ToString(),
             MatchId = addNotificationRequest.MatchId,
+            Team1 = addNotificationRequest.Team1,
+            Team2 = addNotificationRequest.Team2,
             MatchStartsAt = addNotificationRequest.MatchStartsAt,
             NotificationType = addNotificationRequest.NotificationType,
             TeamInQuestion = addNotificationRequest.TeamInQuestion,
@@ -192,10 +216,10 @@ public class MongoDbClient : IDbClient
 
         await collection.InsertOneAsync(notificationDbModel);
 
-        return notificationDbModel;
+        return notificationDbModel.ToResponse();
     }
 
-    private static async Task<NotificationDbModel> UpdateExistingNotification(
+    private static async Task<NotificationResponse> UpdateExistingNotification(
         IMongoCollection<NotificationDbModel> collection,
         IEnumerable<NotificationDbModel> existingNotifications,
         AddNotificationRequest addNotificationRequest)
@@ -220,7 +244,22 @@ public class MongoDbClient : IDbClient
 
         await collection.UpdateOneAsync(filter, update);
 
-        return notificationToUpdate;
+        return notificationToUpdate.ToResponse();
+    }
+
+    private static async Task RemoveRegistrationTokenFromNotification(
+        IMongoCollection<NotificationDbModel> collection,
+        NotificationDbModel notification,
+        string registrationTokenToRemove)
+    {
+        var updatedRegistrationTokens = notification.RegistrationTokens;
+        updatedRegistrationTokens.RemoveAll(t => t == registrationTokenToRemove);
+        
+        var filter = Builders<NotificationDbModel>.Filter.Eq("Id", notification.Id);
+        var update = Builders<NotificationDbModel>.Update
+            .Set(n => n.RegistrationTokens, updatedRegistrationTokens);
+
+        await collection.UpdateOneAsync(filter, update);
     }
 
     private static FilterDefinition<MatchDbModel> BuildMatchTypeFilter(QueryMatchesRequest request)
