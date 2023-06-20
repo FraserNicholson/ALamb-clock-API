@@ -55,7 +55,7 @@ public class MatchesController : Controller
     /// Sets up a notification
     /// </summary>
     /// <returns>Sets up a notification that will be sent to a device when the notification criteria is met</returns>
-    [HttpPost("setup-notification")]
+    [HttpPost("notification")]
     public async Task<IActionResult> SetupNotification([FromBody] AddNotificationRequest request)
     {
         var (isValid, errorMessage) = request.IsValid();
@@ -76,7 +76,7 @@ public class MatchesController : Controller
         return Created(response.Id, response);
     }
 
-    [HttpGet("get-notifications")]
+    [HttpGet("notifications")]
     public async Task<IActionResult> GetNotifications([FromQuery] string registrationToken)
     {
         if (string.IsNullOrWhiteSpace(registrationToken))
@@ -94,9 +94,9 @@ public class MatchesController : Controller
         return Ok(notifications);
     }
 
-    [HttpDelete("delete-notification")]
+    [HttpDelete("notification/{notificationId}")]
     public async Task<IActionResult> DeleteNotification(
-        [FromQuery] string notificationId,
+        [FromRoute] string notificationId,
         [FromQuery] string registrationToken)
     {
         if (string.IsNullOrWhiteSpace(registrationToken))
