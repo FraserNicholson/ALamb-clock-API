@@ -14,7 +14,7 @@ public static class TestData
             {
                 Id = "notification1",
                 MatchId = "match1",
-                MatchStartsAt = DateTimeOffset.Now,
+                DateTimeGmt = DateTime.Now,
                 NotificationType = NotificationType.ChangeOfInnings,
                 TeamInQuestion = "team1",
                 RegistrationTokens = new List<string> { "reg-token" }
@@ -23,7 +23,7 @@ public static class TestData
             {
                 Id = "notification2",
                 MatchId = "match2",
-                MatchStartsAt = DateTimeOffset.Now,
+                DateTimeGmt = DateTime.Now,
                 NotificationType = NotificationType.WicketCount,
                 TeamInQuestion = "team2",
                 RegistrationTokens = new List<string> { "reg-token" },

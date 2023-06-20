@@ -58,6 +58,13 @@ public class MatchesController : Controller
     [HttpPost("setup-notification")]
     public async Task<IActionResult> SetupNotification([FromBody] AddNotificationRequest request)
     {
+        var (isValid, errorMessage) = request.IsValid();
+        
+        if (!isValid)
+        {
+            return BadRequest(errorMessage);
+        }
+        
         var createdNotification = await _dbClient.AddOrUpdateNotification(request);
 
         var response = new NotificationCreatedResponse

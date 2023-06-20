@@ -207,7 +207,7 @@ public class MongoDbClient : IDbClient
             MatchId = addNotificationRequest.MatchId,
             Team1 = addNotificationRequest.Team1,
             Team2 = addNotificationRequest.Team2,
-            MatchStartsAt = addNotificationRequest.MatchStartsAt,
+            DateTimeGmt = addNotificationRequest.DateTimeGmt,
             NotificationType = addNotificationRequest.NotificationType,
             TeamInQuestion = addNotificationRequest.TeamInQuestion,
             NumberOfWickets = addNotificationRequest.NumberOfWickets,
