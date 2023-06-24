@@ -15,7 +15,7 @@ public static class TestData
                 Id = "notification1",
                 MatchId = "match1",
                 DateTimeGmt = DateTime.Now,
-                NotificationType = NotificationType.ChangeOfInnings,
+                NotificationType = NotificationType.InningsStarted,
                 TeamInQuestion = "team1",
                 RegistrationTokens = new List<string> { "reg-token" }
             },

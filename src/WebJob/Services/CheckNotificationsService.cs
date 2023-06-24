@@ -58,7 +58,7 @@ public class CheckNotificationsService : ICheckNotificationsService
         {
             var notificationSatisfied = notification.NotificationType switch
             {
-                NotificationType.ChangeOfInnings
+                NotificationType.InningsStarted
                     => GetNotificationSatisfiedForChangeOfInnings(notification, currentMatches.Data),
                 NotificationType.WicketCount
                     => GetNotificationSatisfiedForWicketCount(notification, currentMatches.Data),

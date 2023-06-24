@@ -10,6 +10,6 @@ public class NotificationResponse
     public string Team2 { get; set; } = default!;
     public DateTimeOffset MatchStartsAt { get; set; }
     public string TeamInQuestion { get; set; } = default!;
-    public NotificationType NotificationType { get; set; }
+    public string NotificationType { get; set; } = default!;
     public int? NumberOfWickets { get; set; }
 }

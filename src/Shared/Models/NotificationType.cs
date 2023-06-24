@@ -2,6 +2,6 @@
 
 public enum NotificationType
 {
-    ChangeOfInnings,
+    InningsStarted,
     WicketCount
 }
