@@ -4,6 +4,7 @@ public class QueryMatchesRequest
 {
     public string? MatchType { get; set; }
     public int PageNumber { get; set; } = 1;
+    public string? TeamSearchTerm { get; set; }
 
     public (bool, string) IsValid()
     {

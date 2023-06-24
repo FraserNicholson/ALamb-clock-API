@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Shared.Contracts;
 using Shared.Extensions;
@@ -71,13 +72,16 @@ public class MongoDbClient : IDbClient
 
     public async Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request)
     {
-        var filter = BuildMatchTypeFilter(request);
+        var matchTypeFilter = BuildMatchTypeFilter(request);
+        var searchTermFilter = BuildTeamSearchFilter(request);
+
+        var combinedFilter = matchTypeFilter & searchTermFilter;
 
         var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
-        var matchesCount = (int)await matchesCollection.CountDocumentsAsync(filter);
+        var matchesCount = (int)await matchesCollection.CountDocumentsAsync(combinedFilter);
 
-        var matchesFromDb = await matchesCollection.Find(filter)
+        var matchesFromDb = await matchesCollection.Find(combinedFilter)
             .Skip((request.PageNumber - 1) * MatchesPageSize)
             .Limit(MatchesPageSize)
             .ToListAsync();
@@ -267,5 +271,19 @@ public class MongoDbClient : IDbClient
         return string.IsNullOrWhiteSpace(request.MatchType)
             ? Builders<MatchDbModel>.Filter.Empty
             : Builders<MatchDbModel>.Filter.Eq("MatchType", request.MatchType == "county" ? string.Empty : request.MatchType);
+    }
+
+    private static FilterDefinition<MatchDbModel> BuildTeamSearchFilter(QueryMatchesRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.TeamSearchTerm))
+        {
+            return Builders<MatchDbModel>.Filter.Empty;
+        }
+
+        // The "i" ensures we get case insensitive matches
+        var filter = Builders<MatchDbModel>.Filter.Regex("Team1", new BsonRegularExpression(request.TeamSearchTerm, "i"))
+                     | Builders<MatchDbModel>.Filter.Regex("Team2", new BsonRegularExpression(request.TeamSearchTerm, "i"));
+
+        return filter;
     }
 }
