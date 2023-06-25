@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using ALamb_clock_API.Middleware;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
@@ -38,6 +39,14 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddHttpLogging(logging =>
+{
+    // Customize HTTP logging here.
+    logging.LoggingFields = HttpLoggingFields.All;
+    logging.RequestBodyLogLimit = 4096;
+    logging.ResponseBodyLogLimit = 4096;
+});
+
 builder.Services.AddRateLimiter(options => {
     options.AddFixedWindowLimiter("Fixed", opt => {
         opt.Window = TimeSpan.FromSeconds(1);
@@ -64,6 +73,8 @@ app.UseReDoc(options =>
 });
 
 app.MapControllers();
+
+app.UseHttpLogging();
 
 app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseRateLimiter();
