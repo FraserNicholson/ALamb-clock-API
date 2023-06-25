@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,7 +23,7 @@ public interface IDbClient
     Task DeleteNotification(string notificationId, string registrationToken);
 }
     
-public class MongoDbClient : IDbClient
+public partial class MongoDbClient : IDbClient
 {
     private readonly MongoDbOptions _dbOptions;
     private readonly IMongoClient _mongoClient;
@@ -50,8 +51,8 @@ public class MongoDbClient : IDbClient
                 DateStored = DateOnly.FromDateTime(DateTime.Today).ToString(),
                 Status = m.Status,
                 MatchStatus = (MatchStatus)m.MatchStatus,
-                Team1 = m.Team1,
-                Team2 = m.Team2,
+                Team1 = TeamNameRegex().Replace(m.Team1, string.Empty).TrimEnd(),
+                Team2 = TeamNameRegex().Replace(m.Team2, string.Empty).TrimEnd(),
                 MatchType = m.MatchType,
                 DateTimeGmt = m.DateTimeGmt
             });
@@ -286,4 +287,7 @@ public class MongoDbClient : IDbClient
 
         return filter;
     }
+
+    [GeneratedRegex(@"\[.*\]")]
+    private static partial Regex TeamNameRegex();
 }
