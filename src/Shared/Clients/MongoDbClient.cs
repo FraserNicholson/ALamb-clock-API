@@ -202,17 +202,23 @@ public partial class MongoDbClient : IDbClient
             addNotificationRequest);
     }
 
-    private static async Task<NotificationResponse> AddNewNotification(
+    private async Task<NotificationResponse> AddNewNotification(
         IMongoCollection<NotificationDbModel> collection,
         AddNotificationRequest addNotificationRequest)
     {
+        var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
+
+        var filter = Builders<MatchDbModel>.Filter.Eq("MatchId", addNotificationRequest.MatchId);
+
+        var match = await (await matchesCollection.FindAsync(filter)).SingleOrDefaultAsync();
+        
         var notificationDbModel = new NotificationDbModel
         {
             Id = Guid.NewGuid().ToString(),
             MatchId = addNotificationRequest.MatchId,
-            Team1 = addNotificationRequest.Team1,
-            Team2 = addNotificationRequest.Team2,
-            DateTimeGmt = addNotificationRequest.DateTimeGmt,
+            Team1 = match.Team1,
+            Team2 = match.Team2,
+            DateTimeGmt = match.DateTimeGmt,
             NotificationType = addNotificationRequest.NotificationType,
             TeamInQuestion = addNotificationRequest.TeamInQuestion,
             NumberOfWickets = addNotificationRequest.NumberOfWickets,
@@ -224,7 +230,7 @@ public partial class MongoDbClient : IDbClient
         return notificationDbModel.ToResponse();
     }
 
-    private static async Task<NotificationResponse> UpdateExistingNotification(
+    private async Task<NotificationResponse> UpdateExistingNotification(
         IMongoCollection<NotificationDbModel> collection,
         IEnumerable<NotificationDbModel> existingNotifications,
         AddNotificationRequest addNotificationRequest)

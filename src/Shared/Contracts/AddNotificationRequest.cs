@@ -6,9 +6,6 @@ public class AddNotificationRequest
 {
     public string RegistrationToken { get; set; } = default!;
     public string MatchId { get; set; } = default!;
-    public string Team1 { get; set; } = default!;
-    public string Team2 { get; set; } = default!;
-    public DateTime DateTimeGmt { get; set; } = default!;
     public string TeamInQuestion { get; set; } = default!;
     public NotificationType NotificationType { get; set; }
     public int? NumberOfWickets { get; set; }
@@ -25,16 +22,6 @@ public class AddNotificationRequest
             return (false, ErrorMessage(nameof(MatchId)));
         }
         
-        if (string.IsNullOrWhiteSpace(Team1))
-        {
-            return (false, ErrorMessage(nameof(Team1)));
-        }
-        
-        if (string.IsNullOrWhiteSpace(Team2))
-        {
-            return (false, ErrorMessage(nameof(Team2)));
-        }
-        
         if (string.IsNullOrWhiteSpace(TeamInQuestion))
         {
             return (false, ErrorMessage(nameof(TeamInQuestion)));
@@ -46,7 +33,7 @@ public class AddNotificationRequest
                 $"{nameof(NumberOfWickets)} must be provided when notification is of type {nameof(NotificationType.WicketCount)}");
         }
 
-        return DateTimeGmt <= DateTime.Now ? (false, $"{nameof(DateTimeGmt)} must be in the future") : (true, string.Empty);
+        return (true, string.Empty);
     }
 
     private static string ErrorMessage(string propertyName)
