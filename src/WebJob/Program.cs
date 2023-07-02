@@ -50,12 +50,12 @@ builder.ConfigureServices(services =>
     services.AddSingleton<INotificationProducer, FirebaseNotificationProducer>();
 });
             
-JsonConvert.DefaultSettings = (() =>
+JsonConvert.DefaultSettings = () =>
 {
     var settings = new JsonSerializerSettings();
     settings.Converters.Add(new StringEnumConverter());
     return settings;
-});
+};
             
 builder.UseEnvironment(EnvironmentName.Development);
 builder.ConfigureLogging((context, b) =>

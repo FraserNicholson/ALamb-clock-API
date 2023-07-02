@@ -1,22 +1,16 @@
-﻿using Shared.Models;
+﻿using NotificationTypeEnum = Shared.Models.NotificationType;
 
 namespace Shared.Contracts;
 
 public class AddNotificationRequest
 {
-    public string RegistrationToken { get; set; } = default!;
     public string MatchId { get; set; } = default!;
     public string TeamInQuestion { get; set; } = default!;
-    public NotificationType NotificationType { get; set; }
+    public string NotificationType { get; set; } = default!;
     public int? NumberOfWickets { get; set; }
 
     public (bool, string) IsValid()
     {
-        if (string.IsNullOrWhiteSpace(RegistrationToken))
-        {
-            return (false, ErrorMessage(nameof(RegistrationToken)));
-        }
-        
         if (string.IsNullOrWhiteSpace(MatchId))
         {
             return (false, ErrorMessage(nameof(MatchId)));
@@ -27,10 +21,18 @@ public class AddNotificationRequest
             return (false, ErrorMessage(nameof(TeamInQuestion)));
         }
 
-        if (NotificationType == NotificationType.WicketCount && NumberOfWickets is null)
+        var notificationTypeIsValid =
+            Enum.TryParse<NotificationTypeEnum>(NotificationType, ignoreCase: true, out var notificationTypeEnumValue);
+
+        if (!notificationTypeIsValid)
+        {
+            return (false, "Notification type is invalid. Accepted values are: 'InningsStarted', 'WicketCount'");
+        }
+
+        if (notificationTypeEnumValue == NotificationTypeEnum.WicketCount && NumberOfWickets is null)
         {
             return (false,
-                $"{nameof(NumberOfWickets)} must be provided when notification is of type {nameof(NotificationType.WicketCount)}");
+                $"{nameof(NumberOfWickets)} must be provided when notification is of type {NotificationType}");
         }
 
         return (true, string.Empty);

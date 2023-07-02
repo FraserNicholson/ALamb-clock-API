@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.RateLimiting;
 using Shared.Clients;
 using Shared.Contracts;
+using Shared.Models;
 using Shared.Models.Database;
 
 namespace ALamb_clock_API.Controllers;
@@ -56,16 +57,32 @@ public class MatchesController : Controller
     /// </summary>
     /// <returns>Sets up a notification that will be sent to a device when the notification criteria is met</returns>
     [HttpPost("notification")]
-    public async Task<IActionResult> SetupNotification([FromBody] AddNotificationRequest request)
+    public async Task<IActionResult> SetupNotification(
+        [FromBody] AddNotificationRequest request,
+        [FromHeader] string registrationToken)
     {
+        if (string.IsNullOrWhiteSpace(registrationToken))
+        {
+            return BadRequest($"Query parameter {nameof(registrationToken)} must be provided");
+        }
+        
         var (isValid, errorMessage) = request.IsValid();
         
         if (!isValid)
         {
             return BadRequest(errorMessage);
         }
+
+        var addNotificationDbRequest = new AddNotificationDbRequest
+        {
+            MatchId = request.MatchId,
+            RegistrationToken = registrationToken,
+            TeamInQuestion = request.TeamInQuestion,
+            NotificationType = Enum.Parse<NotificationType>(request.NotificationType, ignoreCase: true),
+            NumberOfWickets = request.NumberOfWickets
+        };
         
-        var createdNotification = await _dbClient.AddOrUpdateNotification(request);
+        var createdNotification = await _dbClient.AddOrUpdateNotification(addNotificationDbRequest);
 
         var response = new NotificationCreatedResponse
         {
@@ -77,7 +94,7 @@ public class MatchesController : Controller
     }
 
     [HttpGet("notifications")]
-    public async Task<IActionResult> GetNotifications([FromQuery] string registrationToken)
+    public async Task<IActionResult> GetNotifications([FromHeader] string registrationToken)
     {
         if (string.IsNullOrWhiteSpace(registrationToken))
         {
@@ -88,7 +105,7 @@ public class MatchesController : Controller
 
         if (notifications is null || !notifications.Any())
         {
-            return NotFound();
+            return Ok(Enumerable.Empty<NotificationResponse>());
         }
         
         return Ok(notifications);
@@ -97,7 +114,7 @@ public class MatchesController : Controller
     [HttpDelete("notification/{notificationId}")]
     public async Task<IActionResult> DeleteNotification(
         [FromRoute] string notificationId,
-        [FromQuery] string registrationToken)
+        [FromHeader] string registrationToken)
     {
         if (string.IsNullOrWhiteSpace(registrationToken))
         {

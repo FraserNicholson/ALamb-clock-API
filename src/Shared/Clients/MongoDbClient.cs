@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Shared.Contracts;
 using Shared.Extensions;
+using Shared.Models;
 using Shared.Models.Database;
 using Shared.Options;
 
@@ -16,7 +17,7 @@ public interface IDbClient
     Task<IEnumerable<MatchDbModel>> GetAllMatches();
     Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request);
     Task DeleteExpiredCricketMatches();
-    Task<NotificationResponse> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest);
+    Task<NotificationResponse> AddOrUpdateNotification(AddNotificationDbRequest addNotificationRequest);
     Task<IEnumerable<NotificationResponse>> GetAllNotificationsForRegistrationToken(string registrationToken);
     Task<IEnumerable<NotificationDbModel>> GetActiveNotifications();
     Task DeleteNotifications(IEnumerable<string> notificationIdsToDelete);
@@ -174,7 +175,7 @@ public partial class MongoDbClient : IDbClient
         await notificationsCollection.DeleteOneAsync(idFilter & registrationIdFilter);
     }
 
-    public async Task<NotificationResponse> AddOrUpdateNotification(AddNotificationRequest addNotificationRequest)
+    public async Task<NotificationResponse> AddOrUpdateNotification(AddNotificationDbRequest addNotificationRequest)
     {
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
@@ -204,7 +205,7 @@ public partial class MongoDbClient : IDbClient
 
     private async Task<NotificationResponse> AddNewNotification(
         IMongoCollection<NotificationDbModel> collection,
-        AddNotificationRequest addNotificationRequest)
+        AddNotificationDbRequest addNotificationRequest)
     {
         var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
@@ -233,7 +234,7 @@ public partial class MongoDbClient : IDbClient
     private async Task<NotificationResponse> UpdateExistingNotification(
         IMongoCollection<NotificationDbModel> collection,
         IEnumerable<NotificationDbModel> existingNotifications,
-        AddNotificationRequest addNotificationRequest)
+        AddNotificationDbRequest addNotificationRequest)
     {
         // Firebase Cloud Messaging only supports sending batch notifications for 500 registration tokens
         // at once. So we limit the number of registration tokens to 500 per record
