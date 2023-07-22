@@ -53,12 +53,12 @@ public class MatchesController : Controller
     
 
     /// <summary>
-    /// Sets up a notification
+    /// Save notification
     /// </summary>
-    /// <returns>Sets up a notification that will be sent to a device when the notification criteria is met</returns>
+    /// <returns>Adds or updates notification that will be sent to a device when the notification criteria is met</returns>
     [HttpPost("notification")]
-    public async Task<IActionResult> SetupNotification(
-        [FromBody] AddNotificationRequest request,
+    public async Task<IActionResult> SaveNotification(
+        [FromBody] SaveNotificationRequest request,
         [FromHeader] string registrationToken)
     {
         if (string.IsNullOrWhiteSpace(registrationToken))
@@ -73,8 +73,9 @@ public class MatchesController : Controller
             return BadRequest(errorMessage);
         }
 
-        var addNotificationDbRequest = new AddNotificationDbRequest
+        var addNotificationDbRequest = new SaveNotificationDbRequest
         {
+            NotificationId = request.NotificationId,
             MatchId = request.MatchId,
             RegistrationToken = registrationToken,
             TeamInQuestion = request.TeamInQuestion,
@@ -82,13 +83,18 @@ public class MatchesController : Controller
             NumberOfWickets = request.NumberOfWickets
         };
         
-        var createdNotification = await _dbClient.AddOrUpdateNotification(addNotificationDbRequest);
+        var savedNotification = await _dbClient.AddOrUpdateNotification(addNotificationDbRequest);
 
-        var response = new NotificationCreatedResponse
+        var response = new NotificationSavedResponse
         {
-            Id = createdNotification.Id,
-            MatchId = createdNotification.MatchId
+            Id = savedNotification.Id,
+            MatchId = savedNotification.MatchId
         };
+
+        if (request.NotificationId != null)
+        {
+            return Ok();
+        }
 
         return Created(response.Id, response);
     }

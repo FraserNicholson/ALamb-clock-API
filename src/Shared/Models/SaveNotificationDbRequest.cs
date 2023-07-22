@@ -1,7 +1,8 @@
 ﻿namespace Shared.Models;
 
-public class AddNotificationDbRequest
+public class SaveNotificationDbRequest
 {
+    public string? NotificationId { get; set; }
     public string RegistrationToken { get; set; } = default!;
     public string MatchId { get; set; } = default!;
     public string TeamInQuestion { get; set; } = default!;

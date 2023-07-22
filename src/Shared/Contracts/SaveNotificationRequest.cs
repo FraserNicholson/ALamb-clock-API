@@ -2,8 +2,9 @@
 
 namespace Shared.Contracts;
 
-public class AddNotificationRequest
+public class SaveNotificationRequest
 {
+    public string? NotificationId { get; set; }
     public string MatchId { get; set; } = default!;
     public string TeamInQuestion { get; set; } = default!;
     public string NotificationType { get; set; } = default!;

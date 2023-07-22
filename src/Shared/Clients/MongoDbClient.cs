@@ -17,7 +17,7 @@ public interface IDbClient
     Task<IEnumerable<MatchDbModel>> GetAllMatches();
     Task<QueryMatchesResponse> QueryMatches(QueryMatchesRequest request);
     Task DeleteExpiredCricketMatches();
-    Task<NotificationResponse> AddOrUpdateNotification(AddNotificationDbRequest addNotificationRequest);
+    Task<NotificationResponse> AddOrUpdateNotification(SaveNotificationDbRequest saveNotificationRequest);
     Task<IEnumerable<NotificationResponse>> GetAllNotificationsForRegistrationToken(string registrationToken);
     Task<IEnumerable<NotificationDbModel>> GetActiveNotifications();
     Task DeleteNotifications(IEnumerable<string> notificationIdsToDelete);
@@ -176,18 +176,24 @@ public partial class MongoDbClient : IDbClient
         await notificationsCollection.DeleteOneAsync(idFilter & registrationIdFilter);
     }
 
-    public async Task<NotificationResponse> AddOrUpdateNotification(AddNotificationDbRequest addNotificationRequest)
+    public async Task<NotificationResponse> AddOrUpdateNotification(SaveNotificationDbRequest saveNotificationRequest)
     {
+        // If we are updating an existing notification, we need to remove the old notification to prevent duplicate
+        if (saveNotificationRequest.NotificationId != null)
+        {
+            await DeleteNotification(saveNotificationRequest.NotificationId, saveNotificationRequest.RegistrationToken);
+        }
+        
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
         var idFilter = Builders<NotificationDbModel>.Filter.Eq("MatchId",
-            addNotificationRequest.MatchId);
+            saveNotificationRequest.MatchId);
         var notificationTypeFiler = Builders<NotificationDbModel>.Filter.Eq("NotificationType",
-            addNotificationRequest.NotificationType);
+            saveNotificationRequest.NotificationType);
         var teamInQuestionFilter = Builders<NotificationDbModel>.Filter.Eq("TeamInQuestion",
-            addNotificationRequest.TeamInQuestion);
+            saveNotificationRequest.TeamInQuestion);
         var numberOfWicketsFilter = Builders<NotificationDbModel>.Filter.Eq("NumberOfWickets",
-            addNotificationRequest.NumberOfWickets);
+            saveNotificationRequest.NumberOfWickets);
 
         var existingNotifications = (await notificationsCollection
                 .FindAsync(idFilter & notificationTypeFiler & teamInQuestionFilter & numberOfWicketsFilter))
@@ -195,36 +201,36 @@ public partial class MongoDbClient : IDbClient
 
         if (!existingNotifications.Any())
         {
-            return await AddNewNotification(notificationsCollection, addNotificationRequest);
+            return await AddNewNotification(notificationsCollection, saveNotificationRequest);
         }
 
         return await UpdateExistingNotification(
             notificationsCollection,
             existingNotifications,
-            addNotificationRequest);
+            saveNotificationRequest);
     }
 
     private async Task<NotificationResponse> AddNewNotification(
         IMongoCollection<NotificationDbModel> collection,
-        AddNotificationDbRequest addNotificationRequest)
+        SaveNotificationDbRequest saveNotificationRequest)
     {
         var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
-        var filter = Builders<MatchDbModel>.Filter.Eq("MatchId", addNotificationRequest.MatchId);
+        var filter = Builders<MatchDbModel>.Filter.Eq("MatchId", saveNotificationRequest.MatchId);
 
         var match = await (await matchesCollection.FindAsync(filter)).SingleOrDefaultAsync();
         
         var notificationDbModel = new NotificationDbModel
         {
-            Id = Guid.NewGuid().ToString(),
-            MatchId = addNotificationRequest.MatchId,
+            Id = saveNotificationRequest.NotificationId ?? Guid.NewGuid().ToString(),
+            MatchId = saveNotificationRequest.MatchId,
             Team1 = match.Team1,
             Team2 = match.Team2,
             DateTimeGmt = match.DateTimeGmt,
-            NotificationType = addNotificationRequest.NotificationType,
-            TeamInQuestion = addNotificationRequest.TeamInQuestion,
-            NumberOfWickets = addNotificationRequest.NumberOfWickets,
-            RegistrationTokens = new List<string> { addNotificationRequest.RegistrationToken },
+            NotificationType = saveNotificationRequest.NotificationType,
+            TeamInQuestion = saveNotificationRequest.TeamInQuestion,
+            NumberOfWickets = saveNotificationRequest.NumberOfWickets,
+            RegistrationTokens = new List<string> { saveNotificationRequest.RegistrationToken },
         };
 
         await collection.InsertOneAsync(notificationDbModel);
@@ -235,7 +241,7 @@ public partial class MongoDbClient : IDbClient
     private async Task<NotificationResponse> UpdateExistingNotification(
         IMongoCollection<NotificationDbModel> collection,
         IEnumerable<NotificationDbModel> existingNotifications,
-        AddNotificationDbRequest addNotificationRequest)
+        SaveNotificationDbRequest saveNotificationRequest)
     {
         // Firebase Cloud Messaging only supports sending batch notifications for 500 registration tokens
         // at once. So we limit the number of registration tokens to 500 per record
@@ -244,12 +250,12 @@ public partial class MongoDbClient : IDbClient
 
         if (notificationToUpdate is null)
         {
-            return await AddNewNotification(collection, addNotificationRequest);
+            return await AddNewNotification(collection, saveNotificationRequest);
         }
 
         var updatedRegistrationTokens = notificationToUpdate.RegistrationTokens;
         updatedRegistrationTokens
-            .Add(addNotificationRequest.RegistrationToken);
+            .Add(saveNotificationRequest.RegistrationToken);
 
         var filter = Builders<NotificationDbModel>.Filter.Eq("Id", notificationToUpdate.Id);
         var update = Builders<NotificationDbModel>.Update
