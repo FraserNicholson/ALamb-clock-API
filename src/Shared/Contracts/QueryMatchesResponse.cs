@@ -2,7 +2,8 @@
 
 public class QueryMatchesResponse
 {
-    public int Count { get; set; } = default!;
+    public int Count { get; set; }
+    public int CurrentPageCount { get; set; }
     public MatchesResponse[] Matches { get; set; } = default!;
 }
 

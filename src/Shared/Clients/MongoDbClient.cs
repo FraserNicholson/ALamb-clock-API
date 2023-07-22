@@ -31,7 +31,7 @@ public partial class MongoDbClient : IDbClient
     private readonly IMongoDatabase _database;
     private const string MatchesCollectionName = "matches";
     private const string NotificationsCollectionName = "notifications";
-    private const int MatchesPageSize = 10;
+    private const int MatchesPageSize = 5;
 
     public MongoDbClient(IOptions<MongoDbOptions> dbOptions, IMongoClient mongoClient)
     {
@@ -81,7 +81,7 @@ public partial class MongoDbClient : IDbClient
 
         var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
 
-        var matchesCount = (int)await matchesCollection.CountDocumentsAsync(combinedFilter);
+        var totalMatchesCount = (int)await matchesCollection.CountDocumentsAsync(combinedFilter);
 
         var matchesFromDb = await matchesCollection.Find(combinedFilter)
             .Skip((request.PageNumber - 1) * MatchesPageSize)
@@ -90,7 +90,7 @@ public partial class MongoDbClient : IDbClient
 
         var matchesResponse = new QueryMatchesResponse
         {
-            Count = matchesCount,
+            Count = totalMatchesCount,
             Matches = matchesFromDb.Select(m => new MatchesResponse
             {
                 Id = m.MatchId,
@@ -100,7 +100,8 @@ public partial class MongoDbClient : IDbClient
                 Team2 = m.Team2,
                 MatchType = m.MatchType,
                 DateTimeGmt = m.DateTimeGmt
-            }).ToArray()
+            }).ToArray(),
+            CurrentPageCount = matchesFromDb.Count
         };
 
         return matchesResponse;
