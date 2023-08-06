@@ -36,7 +36,7 @@ public class FirebaseNotificationProducer : INotificationProducer
         return notification.NotificationType switch
         {
             NotificationType.InningsStarted => $"{notification.TeamInQuestion} have started batting",
-            NotificationType.WicketCount => $"{notification.TeamInQuestion} are {notification.NumberOfWickets} down",
+            NotificationType.WicketCount => $"{notification.TeamInQuestion} are {notification.NumberOfWickets} wickets down",
             _ => string.Empty
         };
     }

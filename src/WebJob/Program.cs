@@ -17,7 +17,6 @@ var builder = new HostBuilder();
 IConfiguration configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: true)
     .AddJsonFile("appsettings.local.json", optional: true)
-    .AddJsonFile("appsettings.firebase.json")
     .AddEnvironmentVariables()
     .Build();
             
@@ -40,9 +39,12 @@ builder.ConfigureServices(services =>
 
     services.AddSingleton<IDbClient, MongoDbClient>();
 
+    var firebaseServiceAccountConfiguration = configuration.GetSection("Firebase:ServiceAccount").Get<Dictionary<string, object>>();
+    var firebaseServiceAccountJson = JsonConvert.SerializeObject(firebaseServiceAccountConfiguration);
+    
     FirebaseApp.Create(new AppOptions
     {
-        Credential = GoogleCredential.FromFile("appsettings.firebase.json"),
+        Credential = GoogleCredential.FromJson(firebaseServiceAccountJson),
         ProjectId = firebaseConfig.Get<FirebaseOptions>()?.ProjectId,
     });
 
