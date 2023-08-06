@@ -38,6 +38,8 @@ public class Functions
     public async Task CheckNotifications([TimerTrigger("0 * * * * *", RunOnStartup = false)] TimerInfo timerInfo, ILogger logger)
     {
         logger.LogInformation("Starting {FunctionName}", nameof(UpdateMatchesList));
-        await _checkNotificationsService.CheckAndSendNotifications();
+        var notificationsSatisfied = await _checkNotificationsService.CheckAndSendNotifications();
+        
+        logger.LogInformation("{NotificationsSatisfied} notifications have been satisfied", notificationsSatisfied);
     }
 }

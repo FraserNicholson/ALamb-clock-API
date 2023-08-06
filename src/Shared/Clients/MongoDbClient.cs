@@ -49,7 +49,7 @@ public partial class MongoDbClient : IDbClient
             {
                 Id = Guid.NewGuid().ToString(),
                 MatchId = m.Id,
-                DateStored = DateOnly.FromDateTime(DateTime.Today).ToString(),
+                DateStored = DateOnly.FromDateTime(DateTime.Today),
                 Status = m.Status,
                 MatchStatus = (MatchStatus)m.MatchStatus,
                 Team1 = TeamNameRegex().Replace(m.Team1, string.Empty).TrimEnd(),
@@ -110,15 +110,13 @@ public partial class MongoDbClient : IDbClient
     public async Task DeleteExpiredCricketMatches()
     {
         var matchesCollection = _database.GetCollection<MatchDbModel>(MatchesCollectionName);
-
-        var yesterdayFilter =
-            Builders<MatchDbModel>.Filter.Lte("DateStored",
-                DateOnly.FromDateTime(DateTime.Today.AddDays(-1)).ToString());
+        var dateToday = DateOnly.FromDateTime(DateTime.Today);
         
+        var yesterdayFilter =
+            Builders<MatchDbModel>.Filter.Lt("DateStored", dateToday);
         
         var todayFilter =
-            Builders<MatchDbModel>.Filter.Lte("DateStored",
-                DateOnly.FromDateTime(DateTime.Today).ToString());
+            Builders<MatchDbModel>.Filter.Eq("DateStored", dateToday);
 
         var numberOfMatchesStoredToday = (int)await matchesCollection.CountDocumentsAsync(todayFilter);
 
@@ -141,8 +139,8 @@ public partial class MongoDbClient : IDbClient
     {
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
-        var filter = Builders<NotificationDbModel>.Filter.Lte("MatchStartsAt",
-            DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
+        var filter = Builders<NotificationDbModel>.Filter.Lte("DateTimeGmt",
+            DateTime.UtcNow.ToString("yyyy-MM-ddTHH\\:mm\\:ss.fffffffzzz", CultureInfo.InvariantCulture));
 
         return (await notificationsCollection.FindAsync(filter)).ToList();
     }
@@ -151,8 +149,8 @@ public partial class MongoDbClient : IDbClient
     {
         var notificationsCollection = _database.GetCollection<NotificationDbModel>(NotificationsCollectionName);
 
-        var filter = Builders<NotificationDbModel>.Filter.Eq("Id", notificationIdsToDelete);
-
+        var filter = Builders<NotificationDbModel>.Filter.In("_id", notificationIdsToDelete);
+        
         await notificationsCollection.DeleteManyAsync(filter);
     }
 

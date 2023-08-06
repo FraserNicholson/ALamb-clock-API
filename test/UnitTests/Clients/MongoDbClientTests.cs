@@ -73,12 +73,12 @@ public class MongoDbClientTests
             new ()
             {
                 MatchId = "match-id",
-                DateStored = DateTime.Today.ToString(CultureInfo.InvariantCulture)
+                DateStored = DateOnly.FromDateTime(DateTime.Today)
             },
             new ()
             {
                 MatchId = "match-id-2",
-                DateStored = DateTime.Today.ToString(CultureInfo.InvariantCulture)
+                DateStored = DateOnly.FromDateTime(DateTime.Today)
             }
         };
         

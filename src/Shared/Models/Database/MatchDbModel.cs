@@ -7,7 +7,7 @@ public class MatchDbModel
     [BsonId]
     public string Id { get; set; } = default!;
     public string MatchId { get; set; } = default!;
-    public string DateStored { get; init; } = default!;
+    public DateOnly DateStored { get; init; }
     public DateTime DateTimeGmt { get; set; }
     public string MatchType { get; set; } = default!;
     public string Status { get; set; } = default!;
