@@ -9,7 +9,7 @@ on:
       - 'main'
 
 env:
-  project-path: ./src/Host
+  PROJECT-PATH: ./src/Host
 
 jobs:
   build-and-test:
@@ -28,7 +28,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build $project-path --configuration Release --no-restore
+        run: dotnet build ${{env.PROJECT-PATH}} --configuration Release --no-restore
 
       - name: Test
         run: dotnet test --no-restore --verbosity normal

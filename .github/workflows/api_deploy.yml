@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  project-path: ./src/Host
+  PROJECT-PATH: ./src/Host
 
 jobs:
   build:
@@ -22,13 +22,13 @@ jobs:
           dotnet-version: '7.x'
 
       - name: Build with dotnet
-        run: dotnet build $project-path --configuration Release
+        run: dotnet build ${{env.PROJECT-PATH}} --configuration Release
 
       - name: Test
         run: dotnet test --no-restore --verbosity normal
 
       - name: dotnet publish
-        run: dotnet publish $project-path -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
+        run: dotnet publish ${{env.PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
