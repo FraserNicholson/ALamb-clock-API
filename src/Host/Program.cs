@@ -76,6 +76,11 @@ app.MapControllers();
 
 app.UseHttpLogging();
 
+if (!builder.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
 app.UseRateLimiter();
 
