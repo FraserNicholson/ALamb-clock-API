@@ -1,0 +1,33 @@
+name: API - Build and test
+
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - 'main'
+
+env:
+  project-path: ./src/Host
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '7.x'
+
+      - name: Install dependencies
+        run: dotnet restore $project-path
+
+      - name: Build
+        run: dotnet build $project-path --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
