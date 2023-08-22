@@ -2,8 +2,6 @@ name: API - Build and test
 
 on:
   push:
-    branches:
-      - 'main'
   pull_request:
     types:
       - opened
@@ -14,7 +12,7 @@ env:
   project-path: ./src/Host
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
