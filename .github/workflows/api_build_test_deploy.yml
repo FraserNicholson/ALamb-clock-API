@@ -1,4 +1,4 @@
-name: Build and test
+name: API
 
 on:
   push:
@@ -38,10 +38,10 @@ jobs:
         run: dotnet publish ${{env.PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
       - name: Upload artifact for deployment job
+        if: ${{ github.ref_name }} == 'main'
         uses: actions/upload-artifact@v2
         with:
           name: .net-app
-          if: ${{ github.ref_name }} == 'main'
           path: ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
   # deploy:
