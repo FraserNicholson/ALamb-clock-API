@@ -7,6 +7,10 @@ on:
       - opened
     branches:
       - 'main'
+  workflow_dispatch:
+
+env:
+  PROJECT-PATH: ./src/Host
 
 jobs:
   build-and-test:
