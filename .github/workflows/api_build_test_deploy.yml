@@ -38,7 +38,7 @@ jobs:
         run: dotnet publish ${{env.PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
       - name: Upload artifact for deployment job
-        if: ${{ github.ref_name }} == 'main'
+        if: ${{ github.ref_name }} == 'mainsss'
         uses: actions/upload-artifact@v2
         with:
           name: .net-app
