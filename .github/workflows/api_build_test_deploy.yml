@@ -1,28 +1,35 @@
-name: Api - Deploy
+name: API
 
 on:
   push:
+  pull_request:
+    types:
+      - opened
     branches:
-      - main
+      - 'main'
   workflow_dispatch:
 
 env:
   PROJECT-PATH: ./src/Host
 
 jobs:
-  build:
+  build-and-test:
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '7.x'
 
-      - name: Build with dotnet
-        run: dotnet build ${{env.PROJECT-PATH}} --configuration Release
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
 
       - name: Test
         run: dotnet test --no-restore --verbosity normal
@@ -31,14 +38,16 @@ jobs:
         run: dotnet publish ${{env.PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
       - name: Upload artifact for deployment job
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: actions/upload-artifact@v2
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
   deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-test
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
