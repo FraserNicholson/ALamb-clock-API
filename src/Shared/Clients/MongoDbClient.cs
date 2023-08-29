@@ -176,7 +176,7 @@ public partial class MongoDbClient : IDbClient
 
     public async Task<NotificationResponse> AddOrUpdateNotification(SaveNotificationDbRequest saveNotificationRequest)
     {
-        // If we are updating an existing notification, we need to remove the old notification to prevent duplicate
+        // If we are updating an existing notification, we need to remove the old notification to prevent duplicates
         if (saveNotificationRequest.NotificationId != null)
         {
             await DeleteNotification(saveNotificationRequest.NotificationId, saveNotificationRequest.RegistrationToken);

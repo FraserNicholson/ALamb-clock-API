@@ -34,25 +34,35 @@ public class CheckNotificationsService : ICheckNotificationsService
             return 0;
         }
 
-        var satisfiedNotifications = (await GetSatisfiedNotifications(activeNotifications)).ToList();
+        var (satisfiedNotifications, notificationIdsToDelete) = (await GetSatisfiedAndExpiredNotifications(activeNotifications));
 
-        if (!satisfiedNotifications.Any())
+        if (satisfiedNotifications.Any())
         {
-            return 0;
+            await _notificationProducer.SendNotifications(satisfiedNotifications);
+
+            notificationIdsToDelete = notificationIdsToDelete.Concat(satisfiedNotifications.Select(n => n.Id)).ToList();
         }
         
-        await _notificationProducer.SendNotifications(satisfiedNotifications);
-
-        await _databaseClient.DeleteNotifications(satisfiedNotifications.Select(n => n.Id));
+        if (notificationIdsToDelete.Any())
+        {
+            await _databaseClient.DeleteNotifications(notificationIdsToDelete);
+        }
 
         return satisfiedNotifications.Count;
     }
 
-    private async Task<IEnumerable<NotificationDbModel>> GetSatisfiedNotifications(
+    private async Task<(ICollection<NotificationDbModel>, ICollection<string>)> GetSatisfiedAndExpiredNotifications(
         IEnumerable<NotificationDbModel> activeNotifications)
     {
-        var satisfiedNotificationIds = new List<NotificationDbModel>();
+        var satisfiedNotifications = new List<NotificationDbModel>();
+        var expiredNotificationIds = new List<string>();
+
         var currentMatches = await _cricketDataApiClient.GetCurrentMatches();
+
+        if (currentMatches == null)
+        {
+            return (satisfiedNotifications, expiredNotificationIds);
+        }
 
         foreach (var notification in activeNotifications)
         {
@@ -67,14 +77,36 @@ public class CheckNotificationsService : ICheckNotificationsService
 
             if (notificationSatisfied)
             {
-                satisfiedNotificationIds.Add(notification);
+                satisfiedNotifications.Add(notification);
+                continue;
+            }
+
+            var notificationExpired = GetHasNotificationExpired(notification, currentMatches.Data);
+            if (notificationExpired)
+            {
+                expiredNotificationIds.Add(notification.Id);
             }
         }
 
-        return satisfiedNotificationIds;
+        return (satisfiedNotifications, expiredNotificationIds);
     }
 
-    private bool GetNotificationSatisfiedForChangeOfInnings(
+
+    private static bool GetHasNotificationExpired(
+        NotificationDbModel notification,
+        IEnumerable<CricketDataCurrentMatch> currentMatches)
+    {
+        var match = currentMatches.SingleOrDefault(m => m.Id == notification.MatchId);
+
+        if (match == null)
+        {
+            return true;
+        }
+
+        return match.MatchEnded;
+    }
+
+    private static bool GetNotificationSatisfiedForChangeOfInnings(
         NotificationDbModel notification,
         IEnumerable<CricketDataCurrentMatch> currentMatches)
     {
@@ -95,7 +127,7 @@ public class CheckNotificationsService : ICheckNotificationsService
         return currentInnings.Wickets == 10;
     }
 
-    private bool GetNotificationSatisfiedForWicketCount(
+    private static bool GetNotificationSatisfiedForWicketCount(
         NotificationDbModel notification,
         IEnumerable<CricketDataCurrentMatch> currentMatches)
     {
@@ -116,7 +148,7 @@ public class CheckNotificationsService : ICheckNotificationsService
         return currentInnings.Wickets >= notification.NumberOfWickets;
     }
 
-    private Score? GetCurrentInnings(CricketDataCurrentMatch? match)
+    private static Score? GetCurrentInnings(CricketDataCurrentMatch? match)
     {
         if (match == null)
         {

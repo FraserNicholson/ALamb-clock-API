@@ -34,7 +34,6 @@ public static class TestData
     
     public static CricketDataCurrentMatchesResponse[] NoNotificationsSatisfiedTestCases =
     {
-        new () { Data = Array.Empty<CricketDataCurrentMatch>()},
         new()
         {
             Data = new CricketDataCurrentMatch[]
