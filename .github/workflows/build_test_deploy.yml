@@ -6,7 +6,7 @@ on:
 
 env:
   API-PROJECT-PATH: ./src/Host
-  FUNCTIONS-PROJECT-PATH: ./src/WebJob
+  FUNCTIONS-PROJECT-PATH: ./src/Functions
 
 jobs:
   build-and-test:

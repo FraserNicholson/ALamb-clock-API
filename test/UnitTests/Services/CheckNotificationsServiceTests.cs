@@ -5,7 +5,7 @@ using Shared.Clients;
 using Shared.Contracts;
 using Shared.Messaging;
 using Shared.Models.Database;
-using WebJob.Services;
+using Functions.Services;
 
 namespace UnitTests.Services;
 
