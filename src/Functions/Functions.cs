@@ -1,9 +1,9 @@
 ﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Shared.Clients;
-using WebJob.Services;
+using Functions.Services;
 
-namespace WebJob;
+namespace Functions;
 
 public class Functions
 {

@@ -4,7 +4,7 @@ using Shared.Messaging;
 using Shared.Models;
 using Shared.Models.Database;
 
-namespace WebJob.Services;
+namespace Functions.Services;
 
 public interface ICheckNotificationsService
 {
