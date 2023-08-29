@@ -123,4 +123,38 @@ public class CheckNotificationsServiceTests
 
         notificationsSent.Should().Be(2);
     }
+
+    [Test]
+    public async Task CheckAndSendNotifications_WithAllExpireNotifications_ShouldDeleteAllNotifications()
+    {
+        var apiResponse = new CricketDataCurrentMatchesResponse()
+        {
+            Data = new CricketDataCurrentMatch[]
+            {
+                new()
+                {
+                    Id = "match1",
+                    MatchEnded = true,
+                }
+            }
+        };
+
+        Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
+            .ReturnsAsync(TestData.MockActiveNotifications);
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches())
+            .ReturnsAsync(apiResponse);
+
+        var sut = CreateSut();
+
+        var notificationsSent = await sut.CheckAndSendNotifications();
+
+        var notificationsExpectedToBeDeleted = new List<string>() { "notification1", "notification2" };
+
+        Mock.Get(_notificationProducer)
+            .Verify(p => p.SendNotifications(It.IsAny<IEnumerable<NotificationDbModel>>()), Times.Never);
+        Mock.Get(_dbClient)
+            .Verify(p => p.DeleteNotifications(notificationsExpectedToBeDeleted), Times.Once);
+
+        notificationsSent.Should().Be(0);
+    }
 }
