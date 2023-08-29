@@ -9,7 +9,7 @@ using Shared.Clients;
 using Shared.Options;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using WebJob.Services;
+using Functions.Services;
 using Shared.Messaging;
 
 var builder = new HostBuilder();

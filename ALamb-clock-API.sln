@@ -1,16 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Host", "src\Host\Host.csproj", "{6F940FCC-6F1E-49DD-98B7-684E59A80832}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Host", "src\Host\Host.csproj", "{6F940FCC-6F1E-49DD-98B7-684E59A80832}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebJob", "src\WebJob\WebJob.csproj", "{7AAEDA16-1EF1-46D1-A524-348B2ADCE204}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions", "src\WebJob\Functions.csproj", "{7AAEDA16-1EF1-46D1-A524-348B2ADCE204}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "src\Shared\Shared.csproj", "{B161C229-2B30-4349-A75C-634034A77562}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "src\Shared\Shared.csproj", "{B161C229-2B30-4349-A75C-634034A77562}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{38EB542B-DC99-4A8C-8A03-068BB3AA7617}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B8D53ED6-3DF3-44C3-8657-E6D46C30ADB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{26270459-BC06-43C0-9D71-7778D14A1302}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{26270459-BC06-43C0-9D71-7778D14A1302}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,10 +38,13 @@ Global
 		{26270459-BC06-43C0-9D71-7778D14A1302}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26270459-BC06-43C0-9D71-7778D14A1302}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6F940FCC-6F1E-49DD-98B7-684E59A80832} = {B8D53ED6-3DF3-44C3-8657-E6D46C30ADB7}
-		{B161C229-2B30-4349-A75C-634034A77562} = {B8D53ED6-3DF3-44C3-8657-E6D46C30ADB7}
 		{7AAEDA16-1EF1-46D1-A524-348B2ADCE204} = {B8D53ED6-3DF3-44C3-8657-E6D46C30ADB7}
+		{B161C229-2B30-4349-A75C-634034A77562} = {B8D53ED6-3DF3-44C3-8657-E6D46C30ADB7}
 		{26270459-BC06-43C0-9D71-7778D14A1302} = {38EB542B-DC99-4A8C-8A03-068BB3AA7617}
 	EndGlobalSection
 EndGlobal
