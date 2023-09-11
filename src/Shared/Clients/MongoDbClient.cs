@@ -43,6 +43,8 @@ public partial class MongoDbClient : IDbClient
     
     public async Task SaveCricketMatches(CricketDataMatchesResponse matches)
     {
+        var teamNameRegex = new Regex(@"\[.*\]");
+
         var matchesToStore = matches.Data
             .Where(m => m.MatchStatus != ResponseMatchStatus.Result)
             .Select(m => new MatchDbModel
@@ -52,8 +54,8 @@ public partial class MongoDbClient : IDbClient
                 DateStored = DateOnly.FromDateTime(DateTime.Today),
                 Status = m.Status,
                 MatchStatus = (MatchStatus)m.MatchStatus,
-                Team1 = TeamNameRegex().Replace(m.Team1, string.Empty).TrimEnd(),
-                Team2 = TeamNameRegex().Replace(m.Team2, string.Empty).TrimEnd(),
+                Team1 = teamNameRegex.Replace(m.Team1, string.Empty).TrimEnd(),
+                Team2 = teamNameRegex.Replace(m.Team2, string.Empty).TrimEnd(),
                 MatchType = m.MatchType,
                 DateTimeGmt = m.DateTimeGmt
             });
@@ -299,7 +301,4 @@ public partial class MongoDbClient : IDbClient
 
         return filter;
     }
-
-    [GeneratedRegex(@"\[.*\]")]
-    private static partial Regex TeamNameRegex();
 }
