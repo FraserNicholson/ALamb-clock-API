@@ -3,6 +3,10 @@ using Shared.Contracts;
 using Shared.Messaging;
 using Shared.Models;
 using Shared.Models.Database;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Functions.Services;
 

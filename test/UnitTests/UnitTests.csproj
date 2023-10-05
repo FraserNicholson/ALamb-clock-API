@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Host\Host.csproj" />
-      <ProjectReference Include="..\..\src\Functions\Functions.csproj" />
     </ItemGroup>
 
 </Project>
