@@ -11,11 +11,10 @@ using Shared.Clients;
 using Shared.Messaging;
 using Shared.Options;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
-[assembly: FunctionsStartup(typeof(FunctionApp1.Startup))]
+[assembly: FunctionsStartup(typeof(Functions.Startup))]
 
-namespace FunctionApp1;
+namespace Functions;
 public class Startup : FunctionsStartup
 {
     public override void Configure(IFunctionsHostBuilder builder)

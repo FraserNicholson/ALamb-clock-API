@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 using Functions.Services;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Shared.Clients;
 
-namespace FunctionApp1;
+namespace Functions;
 
 public class Functions
 {
