@@ -1,4 +1,4 @@
-using CheckNotificationsWorker.Services;
+using Worker.Services;
 using Shared.Clients;
 using Worker.BackgroundTasks;
 

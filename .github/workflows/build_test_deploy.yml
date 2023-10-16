@@ -7,6 +7,7 @@ on:
 env:
   API-PROJECT-PATH: ./src/Host
   FUNCTIONS-PROJECT-PATH: ./src/Functions
+  WORKER-PROJECT-PATH: ./src/Worker
 
 jobs:
   build-and-test:
@@ -33,8 +34,8 @@ jobs:
       - name: Publish API
         run: dotnet publish ${{env.API-PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
-      - name: Publish Functions
-        run: dotnet publish ${{env.FUNCTIONS-PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-functions
+      # - name: Publish Functions
+      #   run: dotnet publish ${{env.FUNCTIONS-PROJECT-PATH}} -c Release -o ${{env.DOTNET_ROOT}}/Alamb-clock-functions
 
       - name: Upload API artifact for deployment job
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -43,12 +44,12 @@ jobs:
           name: .api
           path: ${{env.DOTNET_ROOT}}/Alamb-clock-api
 
-      - name: Upload functions artifact for deployment job
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: .functions
-          path: ${{env.DOTNET_ROOT}}/Alamb-clock-functions
+      # - name: Upload functions artifact for deployment job
+      #   if: ${{ github.ref == 'refs/heads/main' }}
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: .functions
+      #     path: ${{env.DOTNET_ROOT}}/Alamb-clock-functions
 
   deploy-api:
     if: ${{ github.ref == 'refs/heads/main' }}
@@ -73,21 +74,50 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_BDE8C09DF462494682D8A5C60BF206CD }}
           package: .
 
-  deploy-functions:
-    if: ${{ github.ref == 'refs/heads/main' }}
+  # deploy-functions:
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-test
+
+  #   steps:
+  #     - name: Download API artifact from build job
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: .functions
+
+  #     - name: Deploy to Azure Function App
+  #       id: deploy-to-function-app
+  #       uses: Azure/functions-action@v1
+  #       with:
+  #         app-name: 'Alamb-clock-functions'
+  #         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+  #         package: .
+
+  deploy-workers:
     runs-on: ubuntu-latest
     needs: build-and-test
 
     steps:
-      - name: Download API artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: .functions
+      # Check out the code
+      - name: Check out code
+        uses: actions/checkout@v2
 
-      - name: Deploy to Azure Function App
-        id: deploy-to-function-app
-        uses: Azure/functions-action@v1
+      # Log in to Azure CLI
+      - name: Log in to Azure
+        uses: azure/login@v1
         with:
-          app-name: 'Alamb-clock-functions'
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
-          package: .
+    # Azure CLI credentials
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Build and deploy the container app
+      - name: Build and deploy Container App
+        uses: azure/container-apps-deploy-action@v0
+        with:
+          appSourcePath: ${{ github.workspace }}
+          registryUrl: private.dockerhub.io
+          registryUsername: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+          containerAppName: Worker
+          resourceGroup: ALamb-clock-worker
+          imageToBuild: private.dockerhub.io/private.dockerhub.io/${{ github.sha }}>
+          dockerfilePath: ${{env.WORKER-PROJECT-PATH}}

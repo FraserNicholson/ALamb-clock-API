@@ -4,7 +4,7 @@ using Shared.Messaging;
 using Shared.Models;
 using Shared.Models.Database;
 
-namespace CheckNotificationsWorker.Services;
+namespace Worker.Services;
 
 public interface ICheckNotificationsService
 {

@@ -1,5 +1,5 @@
 ﻿namespace Worker.BackgroundTasks;
-public interface BackgroundTask
+public interface IBackgroundTask
 {
     public void Start();
     public Task StopAsync();

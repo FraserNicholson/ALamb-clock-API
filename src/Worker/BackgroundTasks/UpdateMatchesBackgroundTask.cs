@@ -1,7 +1,7 @@
 ﻿using Shared.Clients;
 
 namespace Worker.BackgroundTasks;
-public class UpdateMatchesBackgroundTask : BackgroundTask
+public class UpdateMatchesBackgroundTask : IBackgroundTask
 {
     private Task? _task;
     private readonly PeriodicTimer _timer = new(TimeSpan.FromDays(1));

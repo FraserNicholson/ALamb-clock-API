@@ -1,7 +1,7 @@
-﻿using CheckNotificationsWorker.Services;
+﻿using Worker.Services;
 
 namespace Worker.BackgroundTasks;
-public class CheckNotificationBackgroundTask : BackgroundTask
+public class CheckNotificationBackgroundTask : IBackgroundTask
 {
     private Task? _task;
     private readonly PeriodicTimer _timer = new(TimeSpan.FromMinutes(1));

@@ -1,4 +1,4 @@
-using CheckNotificationsWorker.Services;
+using Worker.Services;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using MongoDB.Driver;
