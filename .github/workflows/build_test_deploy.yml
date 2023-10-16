@@ -114,7 +114,7 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
-          registryUrl: private.dockerhub.io
+          registryUrl: dockerhub.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private
           registryUsername: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
           containerAppName: Worker
