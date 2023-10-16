@@ -120,3 +120,4 @@ jobs:
           containerAppName: Worker
           resourceGroup: ALamb-clock-workers
           dockerfilePath: ${{env.WORKER-PROJECT-PATH}}/Dockerfile
+          imageToBuild: docker.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private/worker:latest
