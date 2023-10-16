@@ -119,4 +119,4 @@ jobs:
           registryPassword: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
           containerAppName: Worker
           resourceGroup: ALamb-clock-workers
-          dockerfilePath: ${{env.WORKER-PROJECT-PATH}}
+          dockerfilePath: ${{env.WORKER-PROJECT-PATH}}/Dockerfile
