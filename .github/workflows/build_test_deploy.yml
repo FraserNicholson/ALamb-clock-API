@@ -114,10 +114,9 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
-          registryUrl: dockerhub.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private
+          registryUrl: docker.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private
           registryUsername: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
           containerAppName: Worker
           resourceGroup: ALamb-clock-worker
-          imageToBuild: private.dockerhub.io/private.dockerhub.io/${{ github.sha }}>
           dockerfilePath: ${{env.WORKER-PROJECT-PATH}}
