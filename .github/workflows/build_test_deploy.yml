@@ -111,7 +111,7 @@ jobs:
 
       # Build and deploy the container app
       - name: Build and deploy Container App
-        uses: azure/container-apps-deploy-action@v0
+        uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
           registryUrl: private.dockerhub.io
