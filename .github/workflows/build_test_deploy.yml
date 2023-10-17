@@ -141,4 +141,4 @@ jobs:
           file: ${{ env.WORKER-PROJECT-PATH }}/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_REGISTRY_USERNAME }}/worker:latest
-          secrets: JSON_SECRET=${{DOCKER_SECRETS}}
+          secrets: "JSON_SECRET=${{env.DOCKER_SECRETS}}"
