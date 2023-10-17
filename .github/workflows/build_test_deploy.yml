@@ -123,7 +123,7 @@ jobs:
           registryUrl: docker.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private
           registryUsername: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-          containerAppName: Worker
+          containerAppName: worker
           resourceGroup: ALamb-clock-workers
           dockerfilePath: ${{env.WORKER-PROJECT-PATH}}/Dockerfile
-          imageToBuild: docker.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private:latest
+          imageToBuild: docker.io/${{ secrets.DOCKER_REGISTRY_USERNAME }}/private/worker:latest
