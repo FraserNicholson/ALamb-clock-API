@@ -48,11 +48,15 @@ public class Startup : FunctionsStartup
         var firebaseServiceAccountConfiguration = configuration.GetSection("Firebase:ServiceAccount").Get<Dictionary<string, object>>();
         var firebaseServiceAccountJson = JsonConvert.SerializeObject(firebaseServiceAccountConfiguration);
 
-        FirebaseApp.Create(new AppOptions
+
+        if (FirebaseApp.DefaultInstance == null)
         {
-            Credential = GoogleCredential.FromJson(firebaseServiceAccountJson),
-            ProjectId = firebaseConfig.Get<FirebaseOptions>()?.ProjectId,
-        });
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromJson(firebaseServiceAccountJson),
+                ProjectId = firebaseConfig.Get<FirebaseOptions>()?.ProjectId,
+            });
+        }
 
         builder.Services.AddSingleton<Functions>();
         builder.Services.AddSingleton<ICheckNotificationsService, CheckNotificationsService>();

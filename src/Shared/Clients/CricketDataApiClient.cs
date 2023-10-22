@@ -30,7 +30,10 @@ public class CricketDataApiClient : BaseHttpClient, ICricketDataApiClient
     public async Task<CricketDataCurrentMatchesResponse> GetCurrentMatches(int offset = 0)
     {
         var requestUri = ConstructRequestUri("currentMatches");
-        
+
+        requestUri += $"&offset={offset}";
+
+
         var response = (await Get<CricketDataCurrentMatchesResponse>(requestUri))!;
         return response;
     }
