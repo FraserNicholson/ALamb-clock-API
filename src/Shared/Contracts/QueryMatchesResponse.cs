@@ -10,7 +10,7 @@ public class QueryMatchesResponse
 public class MatchesResponse
 {
     public string Id { get; set; } = default!;
-    public DateTime DateTimeGmt { get; set; }
+    public string DateTimeGmt { get; set; }
     public string MatchType { get; set; } = default!;
     /// <summary>
     ///  Describes in more detail the match state e.g. what the current score/session/day is

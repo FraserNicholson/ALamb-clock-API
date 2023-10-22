@@ -14,7 +14,7 @@ public static class NotificationModelsExtensions
             MatchId = dbModel.MatchId,
             Team1 = dbModel.Team1,
             Team2 = dbModel.Team2,
-            MatchStartsAt = dbModel.DateTimeGmt,
+            MatchStartsAt = dbModel.DateTimeGmt.ToString("yyyy-MM-dd HH:mm"),
             NotificationType = dbModel.NotificationType.ToFriendlyString(),
             TeamInQuestion = dbModel.TeamInQuestion,
             NumberOfWickets = dbModel.NumberOfWickets

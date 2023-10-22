@@ -101,7 +101,7 @@ public partial class MongoDbClient : IDbClient
                 Team1 = m.Team1,
                 Team2 = m.Team2,
                 MatchType = m.MatchType,
-                DateTimeGmt = m.DateTimeGmt
+                DateTimeGmt = m.DateTimeGmt.ToString("yyyy-MM-dd HH:mm")
             }).ToArray(),
             CurrentPageCount = matchesFromDb.Count
         };
