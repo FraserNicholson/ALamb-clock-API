@@ -54,7 +54,7 @@ public class CheckNotificationsServiceTests
         Mock.Get(_notificationProducer)
             .Verify(p => p.SendNotifications(It.IsAny<IEnumerable<NotificationDbModel>>()), Times.Never);
         Mock.Get(_cricketDataApiClient)
-            .Verify(p => p.GetCurrentMatches(), Times.Never);
+            .Verify(p => p.GetCurrentMatches(0), Times.Never);
         Mock.Get(_dbClient)
             .Verify(p => p.DeleteNotifications(It.IsAny<IEnumerable<string>>()), Times.Never);
         
@@ -67,7 +67,7 @@ public class CheckNotificationsServiceTests
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
             .ReturnsAsync(TestData.MockActiveNotifications);
-        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches())
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(0))
             .ReturnsAsync(apiResponse);
 
         var sut = CreateSut();
@@ -88,7 +88,7 @@ public class CheckNotificationsServiceTests
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
             .ReturnsAsync(TestData.MockActiveNotifications);
-        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches())
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(0))
             .ReturnsAsync(apiResponse);
 
         var sut = CreateSut();
@@ -109,7 +109,7 @@ public class CheckNotificationsServiceTests
     {
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
             .ReturnsAsync(TestData.MockActiveNotifications);
-        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches())
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(0))
             .ReturnsAsync(apiResponse);
 
         var sut = CreateSut();
@@ -139,21 +139,70 @@ public class CheckNotificationsServiceTests
             }
         };
 
+        var apiResponse2 = new CricketDataCurrentMatchesResponse()
+        {
+            Data = new CricketDataCurrentMatch[]
+    {
+                new()
+                {
+                    Id = "match1000",
+                    MatchEnded = true,
+                }
+    }
+        };
+
         Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
             .ReturnsAsync(TestData.MockActiveNotifications);
-        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches())
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(0))
+            .ReturnsAsync(apiResponse);
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(25))
+            .ReturnsAsync(apiResponse2);
+
+        var sut = CreateSut();
+
+        var notificationsSent = await sut.CheckAndSendNotifications();
+
+        var notificationsExpectedToBeDeleted = new List<string>() { "notification1" };
+
+        Mock.Get(_notificationProducer)
+            .Verify(p => p.SendNotifications(It.IsAny<IEnumerable<NotificationDbModel>>()), Times.Never);
+        Mock.Get(_dbClient)
+            .Verify(p => p.DeleteNotifications(notificationsExpectedToBeDeleted), Times.Once);
+
+        notificationsSent.Should().Be(0);
+    }
+
+    [TestCaseSource(nameof(_noNotificationsSatisfiedTestCases))]
+    public async Task CheckAndSendNotifications_WhenRequiredMatchesAreNotInFirstPageOfResponse_FetchesSecondPage(
+    CricketDataCurrentMatchesResponse apiResponse)
+    {
+        Mock.Get(_dbClient).Setup(c => c.GetActiveNotifications())
+            .ReturnsAsync(TestData.MockActiveNotifications);
+
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(0))
+            .ReturnsAsync(new CricketDataCurrentMatchesResponse
+            {
+                Data = new[]
+                {
+                    new CricketDataCurrentMatch { Id = "random match"}
+                } 
+            });
+
+        Mock.Get(_cricketDataApiClient).Setup(c => c.GetCurrentMatches(25))
             .ReturnsAsync(apiResponse);
 
         var sut = CreateSut();
 
         var notificationsSent = await sut.CheckAndSendNotifications();
 
-        var notificationsExpectedToBeDeleted = new List<string>() { "notification1", "notification2" };
-
+        Mock.Get(_cricketDataApiClient)
+            .Verify(c => c.GetCurrentMatches(0), Times.Once);
+        Mock.Get(_cricketDataApiClient)
+            .Verify(c => c.GetCurrentMatches(25), Times.Once);
         Mock.Get(_notificationProducer)
             .Verify(p => p.SendNotifications(It.IsAny<IEnumerable<NotificationDbModel>>()), Times.Never);
         Mock.Get(_dbClient)
-            .Verify(p => p.DeleteNotifications(notificationsExpectedToBeDeleted), Times.Once);
+            .Verify(p => p.DeleteNotifications(It.IsAny<IEnumerable<string>>()), Times.Never);
 
         notificationsSent.Should().Be(0);
     }
