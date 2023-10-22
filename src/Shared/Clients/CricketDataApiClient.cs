@@ -7,7 +7,7 @@ namespace Shared.Clients;
 public interface ICricketDataApiClient
 {
     Task<CricketDataMatchesResponse> GetMatches();
-    Task<CricketDataCurrentMatchesResponse> GetCurrentMatches();
+    Task<CricketDataCurrentMatchesResponse> GetCurrentMatches(int offset = 0);
 }
     
 public class CricketDataApiClient : BaseHttpClient, ICricketDataApiClient
@@ -27,7 +27,7 @@ public class CricketDataApiClient : BaseHttpClient, ICricketDataApiClient
         return response;
     }
 
-    public async Task<CricketDataCurrentMatchesResponse> GetCurrentMatches()
+    public async Task<CricketDataCurrentMatchesResponse> GetCurrentMatches(int offset = 0)
     {
         var requestUri = ConstructRequestUri("currentMatches");
         
