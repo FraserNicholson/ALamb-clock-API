@@ -1,0 +1,3 @@
+services:
+  worker:
+    image: "frasernicholson/worker:latest"
