@@ -1,3 +1,4 @@
 services:
   worker:
     image: "frasernicholson/worker:latest"
+    env_file: .env
