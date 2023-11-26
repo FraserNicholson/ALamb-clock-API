@@ -42,7 +42,7 @@ public class CheckNotificationsService : ICheckNotificationsService
 
             notificationIdsToDelete = notificationIdsToDelete.Concat(satisfiedNotifications.Select(n => n.Id)).ToList();
         }
-
+        
         if (notificationIdsToDelete.Any())
         {
             await _databaseClient.DeleteNotifications(notificationIdsToDelete);
@@ -57,7 +57,9 @@ public class CheckNotificationsService : ICheckNotificationsService
         var satisfiedNotifications = new List<NotificationDbModel>();
         var expiredNotificationIds = new List<string>();
 
-        var currentMatches = await _cricketDataApiClient.GetCurrentMatches();
+        var requiredMatchIds = activeNotifications.Select(n => n.MatchId);
+
+        var currentMatches = await GetAllCurrentMatchesForActiveNotifications(requiredMatchIds);
 
         if (currentMatches == null)
         {
@@ -69,9 +71,9 @@ public class CheckNotificationsService : ICheckNotificationsService
             var notificationSatisfied = notification.NotificationType switch
             {
                 NotificationType.InningsStarted
-                    => GetNotificationSatisfiedForChangeOfInnings(notification, currentMatches.Data),
+                    => GetNotificationSatisfiedForChangeOfInnings(notification, currentMatches),
                 NotificationType.WicketCount
-                    => GetNotificationSatisfiedForWicketCount(notification, currentMatches.Data),
+                    => GetNotificationSatisfiedForWicketCount(notification, currentMatches),
                 _ => false
             };
 
@@ -81,7 +83,7 @@ public class CheckNotificationsService : ICheckNotificationsService
                 continue;
             }
 
-            var notificationExpired = GetHasNotificationExpired(notification, currentMatches.Data);
+            var notificationExpired = GetHasNotificationExpired(notification, currentMatches);
             if (notificationExpired)
             {
                 expiredNotificationIds.Add(notification.Id);
@@ -91,6 +93,27 @@ public class CheckNotificationsService : ICheckNotificationsService
         return (satisfiedNotifications, expiredNotificationIds);
     }
 
+    private async Task<List<CricketDataCurrentMatch>> GetAllCurrentMatchesForActiveNotifications(IEnumerable<string> requiredMatchIds)
+    {
+        var matches = new List<CricketDataCurrentMatch>();
+
+        var response = await _cricketDataApiClient.GetCurrentMatches();
+
+        matches = matches.Concat(response.Data).ToList();
+
+        var responseMatchIds = matches.Select(m => m.Id);
+
+        var requiredMatchesNotInResponse = requiredMatchIds
+            .Any(id => !responseMatchIds.Contains(id));
+
+        if (requiredMatchesNotInResponse)
+        {
+            var matchesWithOffset = await _cricketDataApiClient.GetCurrentMatches(offset: 25);
+            matches = matches.Concat(matchesWithOffset.Data).ToList();
+        }
+
+        return matches;
+    }
 
     private static bool GetHasNotificationExpired(
         NotificationDbModel notification,
@@ -100,7 +123,7 @@ public class CheckNotificationsService : ICheckNotificationsService
 
         if (match == null)
         {
-            return true;
+            return false;
         }
 
         return match.MatchEnded;
