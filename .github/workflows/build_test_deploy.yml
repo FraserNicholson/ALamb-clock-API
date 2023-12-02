@@ -92,7 +92,4 @@ jobs:
           file: ${{ env.WORKER-PROJECT-PATH }}/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_REGISTRY_USERNAME }}/worker:latest
-          build-args: -|
-            newrelicProfile=${{ secrets.NEW_RELIC_PROFILE}}
-            newrelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY}}
-            newrelicEnvironment=prod
+          build-args: newrelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }}
