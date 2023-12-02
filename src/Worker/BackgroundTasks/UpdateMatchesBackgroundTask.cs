@@ -73,24 +73,4 @@ public class UpdateMatchesBackgroundTask : IBackgroundTask
         await _task;
         _cts.Dispose();
     }
-
-    public static int CalculateMillisecondsUntilNextOcurrenceOfHour(int hour)
-    {
-        var today = DateTime.Now;
-
-        var tomorrow = today.Add(new TimeSpan(1, 0, 0, 0));
-
-        var tomorrowAtSix = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, hour, 0, 0);
-
-        var diff = tomorrowAtSix.Subtract(DateTime.Now);
-
-        if (diff.TotalHours > 24d) // next ocurrence is tomorrow
-        {
-            return (int)(diff.TotalMilliseconds - (24 * 60 * 60 * 1000));
-        }
-        else  // next ocurrence is today
-        {
-            return (int)diff.TotalMilliseconds;
-        }
-    }
 }
