@@ -7,6 +7,7 @@
 
 appsettings.local.json
 appsettings.firebase.json
+.env
 
 # User-specific files
 *.rsuser
@@ -460,3 +461,4 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+/src/Functions/local.settings.json

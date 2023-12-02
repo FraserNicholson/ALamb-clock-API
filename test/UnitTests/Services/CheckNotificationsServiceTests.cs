@@ -1,11 +1,11 @@
-﻿using FluentAssertions;
+﻿using Worker.Services;
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using Shared.Clients;
 using Shared.Contracts;
 using Shared.Messaging;
 using Shared.Models.Database;
-using Functions.Services;
 
 namespace UnitTests.Services;
 
