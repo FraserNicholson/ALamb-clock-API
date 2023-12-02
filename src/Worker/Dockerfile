@@ -18,6 +18,8 @@ RUN dotnet build "Worker.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+FROM base AS final
+
 RUN apt-get update && apt-get install -y wget ca-certificates gnupg \
 && echo 'deb http://apt.newrelic.com/debian/ newrelic non-free' | tee /etc/apt/sources.list.d/newrelic.list \
 && wget https://download.newrelic.com/548C16BF.gpg \
@@ -33,7 +35,8 @@ CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so \
 NEW_RELIC_LICENSE_KEY=$newrelicLicenseKey \
 NEW_RELIC_APP_NAME="alamb-clock-worker-$newrelicEnvironment"
 
-FROM base AS final
+RUN echo $newrelicEnvironment
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Worker.dll"]
