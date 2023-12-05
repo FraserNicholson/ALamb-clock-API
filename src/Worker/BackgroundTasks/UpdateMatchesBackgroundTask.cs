@@ -44,6 +44,20 @@ public class UpdateMatchesBackgroundTask : IBackgroundTask
         }
     }
 
+    private async Task UpdateMatchesIfNotDoneToday()
+    {
+        _logger.LogInformation("Checking if matches have been updated today");
+        var existingMatches = await _dbClient.GetAllMatches();
+
+        if (existingMatches.FirstOrDefault()?.DateStored < DateOnly.FromDateTime(DateTime.Now))
+        {
+            await UpdateMatches();
+            return;
+        }
+
+        _logger.LogInformation("Matches already stored today");
+    }
+
     private async Task UpdateMatches()
     {
         var startTime = DateTime.Now;
