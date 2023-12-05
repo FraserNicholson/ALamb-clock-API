@@ -7,22 +7,21 @@ namespace Worker;
 public class WorkerService : BackgroundService
 {
     private readonly ILogger<WorkerService> _logger;
-    private readonly PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
-    private readonly CheckNotificationsService _checkNotifications;
     private readonly IServiceProvider _serviceProvider;
 
     public WorkerService(
         ILogger<WorkerService> logger,
-        CheckNotificationsService checkNotificationsService,
         IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _checkNotifications = checkNotificationsService;
         _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Starting Worker");
+        _logger.LogInformation("Setting backgroung jobs");
+
         using var scope = _serviceProvider.CreateScope();
 
         var checkNotificationsTask = new CheckNotificationBackgroundTask(
