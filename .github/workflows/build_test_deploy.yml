@@ -98,6 +98,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.WORKER_VM_HOSTNAME }}
+          username: ${{ secrets.WORKER_VM_USERNAME }}
           key: ${{ secrets.WORKER_VM_SSH_KEY }}
-          command_timeout: 30m
+          command_timeout: 2m
           script: update-docker-container.sh alamb-clock-worker-prod frasernicholson/worker:latest
