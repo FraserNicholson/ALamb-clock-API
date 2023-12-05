@@ -100,5 +100,4 @@ jobs:
           host: ${{ secrets.WORKER_VM_HOSTNAME }}
           key: ${{ secrets.WORKER_VM_SSH_KEY }}
           command_timeout: 30m
-          script: | 
-            echo "Nice Job!!!"
+          script: update-docker-container.sh alamb-clock-worker-prod frasernicholson/worker:latest
