@@ -30,7 +30,7 @@ public class UpdateMatchesBackgroundTask : IBackgroundTask
     private async Task DoWork()
     {
         // Call once to ensure we don't miss an invocation because of how timers work
-        await UpdateMatches();
+        await UpdateMatchesIfNotDoneToday();
 
         try
         {
