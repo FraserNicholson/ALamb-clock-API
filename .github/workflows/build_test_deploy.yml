@@ -101,7 +101,7 @@ jobs:
           username: ${{ secrets.WORKER_VM_USERNAME }}
           key: ${{ secrets.WORKER_VM_SSH_KEY }}
           command_timeout: 5m
-          script: -|
+          script: |
             sudo docker pull frasernicholson/worker:latest
             sudo docker stop alamb-clock-worker-prod
             sudo docker container rm alamb-clock-worker-prod
