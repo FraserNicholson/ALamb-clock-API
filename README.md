@@ -5,5 +5,5 @@
 Build docker image locally
 
 ```bash
-docker build . -f .\src\Worker\Dockerfile -t worker
+docker build . -f .\src\Worker\Dockerfile -t worker --build-arg newrelicLicenseKey={{$newRelicLicenseKey}}
 ```

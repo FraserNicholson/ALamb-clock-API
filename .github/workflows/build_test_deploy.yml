@@ -92,4 +92,4 @@ jobs:
           file: ${{ env.WORKER-PROJECT-PATH }}/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_REGISTRY_USERNAME }}/worker:latest
-          secrets: "JSON_SECRET=${{env.DOCKER_SECRETS}}"
+          build-args: newrelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }}
